@@ -1,0 +1,5 @@
+model bandd_genres {
+  id       Int @id @default(autoincrement())
+  band_id  Int
+  genre_id Int
+}

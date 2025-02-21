@@ -1,0 +1,10 @@
+model profiles {
+  id              Int     @id @default(autoincrement())
+  name            String
+  handle          String  @unique
+  about           String?
+  avatar          String?
+  spotify_id      String?
+  user_id         Int
+  profile_type_id Int
+}

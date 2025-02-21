@@ -1,0 +1,5 @@
+model tagged_profiles {
+  id         Int @id @default(autoincrement())
+  profile_id Int
+  post_id    Int
+}

@@ -1,0 +1,7 @@
+model posts {
+  id         Int      @id @default(autoincrement())
+  text       String?
+  link       String?
+  datetime   DateTime
+  profile_id Int
+}

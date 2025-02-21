@@ -1,0 +1,4 @@
+model bands {
+  id         Int @id @default(autoincrement())
+  profile_id Int
+}

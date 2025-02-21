@@ -1,0 +1,4 @@
+model profile_types {
+  id   Int    @id @default(autoincrement())
+  name String
+}

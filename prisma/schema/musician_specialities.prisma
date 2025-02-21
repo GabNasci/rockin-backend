@@ -1,0 +1,5 @@
+model musician_specialities {
+  id            Int @id @default(autoincrement())
+  profile_id    Int
+  speciality_id Int
+}

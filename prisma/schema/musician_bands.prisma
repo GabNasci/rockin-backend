@@ -1,0 +1,5 @@
+model musician_bands {
+  id         Int @id @default(autoincrement())
+  profile_id Int
+  band_id    Int
+}

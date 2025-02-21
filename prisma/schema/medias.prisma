@@ -1,0 +1,6 @@
+model medias {
+  id      Int     @id @default(autoincrement())
+  url     String
+  type    String?
+  post_id Int
+}
