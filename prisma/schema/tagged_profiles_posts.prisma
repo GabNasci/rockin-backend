@@ -1,4 +1,4 @@
-model supports {
+model tagged_profiles_posts {
   id         Int      @id @default(autoincrement())
   profile_id Int
   post_id    Int

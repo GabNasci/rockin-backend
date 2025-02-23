@@ -1,6 +1,0 @@
-model feedbacks {
-  id         Int     @id @default(autoincrement())
-  text       String?
-  note       Int
-  profile_id Int
-}

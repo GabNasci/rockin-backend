@@ -1,4 +1,4 @@
-model recomendations {
+model conversation_profiles {
   id         Int       @id @default(autoincrement())
   profile_id Int
   profile    profiles? @relation(fields: [profile_id], references: [id])
