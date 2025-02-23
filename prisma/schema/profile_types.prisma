@@ -1,0 +1,7 @@
+model profile_types {
+  id         Int        @id @default(autoincrement())
+  name       String
+  profiles   profiles[]
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+}
