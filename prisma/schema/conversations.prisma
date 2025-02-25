@@ -1,6 +1,7 @@
 model conversations {
-  id         Int        @id @default(autoincrement())
-  messages   messages[]
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
+  id                    Int                     @id @default(autoincrement())
+  messages              messages[]
+  conversation_profiles conversation_profiles[]
+  created_at            DateTime                @default(now())
+  updated_at            DateTime                @updatedAt
 }
