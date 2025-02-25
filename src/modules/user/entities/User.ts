@@ -1,33 +1,22 @@
 interface UserProps {
-  name: string;
   email: string;
   password: string;
 }
 
 export class User {
   private _id?: number;
-  private _name: string;
   private _email: string;
   private _password: string;
   private _createdAt?: Date;
   private _updatedAt?: Date;
 
   constructor(props: UserProps) {
-    this._name = props.name;
     this._email = props.email;
     this._password = props.password;
   }
 
   public get id(): number | undefined {
     return this._id;
-  }
-
-  public get name(): string {
-    return this._name;
-  }
-
-  public set name(value: string) {
-    this._name = value;
   }
 
   public get email(): string {

@@ -3,7 +3,6 @@ import { UserRepository } from '../repositories/UserReposoitory';
 import { User } from '../entities/User';
 
 interface CreateUserUseCaseRequest {
-  name: string;
   email: string;
   password: string;
 }
@@ -12,9 +11,8 @@ interface CreateUserUseCaseRequest {
 export class CreateUserUseCase {
   constructor(private userRepository: UserRepository) {}
 
-  async execute({ name, email, password }: CreateUserUseCaseRequest) {
+  async execute({ email, password }: CreateUserUseCaseRequest) {
     const user = new User({
-      name: name,
       email: email,
       password: password,
     });
