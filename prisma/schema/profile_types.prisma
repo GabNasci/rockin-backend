@@ -3,5 +3,5 @@ model profile_types {
   name       String
   profiles   profiles[]
   created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
+  updated_at DateTime?  @updatedAt
 }

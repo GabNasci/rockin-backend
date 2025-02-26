@@ -4,59 +4,62 @@ interface ProfileTypeProps {
   id?: number;
   name: string;
   profiles: Profile[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  created_at?: Date;
+  updated_at?: Date | null;
 }
 
 export class ProfileType {
-  private _id?: number;
-  private _name: string;
-  private _profiles: Profile[];
-  private _createdAt?: Date;
-  private _updatedAt?: Date;
+  private id?: number;
+  private name: string;
+  private profiles: Profile[];
+  private created_at?: Date;
+  private updated_at?: Date | null;
 
   constructor(props: ProfileTypeProps) {
-    this._id = props.id;
-    this._name = props.name;
-    this._profiles = props.profiles;
-    this._createdAt = props.createdAt;
-    this._updatedAt = props.updatedAt;
+    this.id = props.id;
+    this.name = props.name;
+    this.profiles = props.profiles;
+    this.created_at = props.created_at;
+    this.updated_at = props.updated_at;
   }
 
-  get id(): number | undefined {
-    return this._id;
-  }
-  set id(id: number | undefined) {
-    this._id = id;
-  }
-  get name(): string {
-    return this._name;
-  }
-  set name(name: string) {
-    this._name = name;
+  public getId(): number | undefined {
+    return this.id;
   }
 
-  get profiles(): Profile[] | undefined {
-    return this._profiles;
+  public setId(id: number): void {
+    this.id = id;
   }
 
-  set profiles(profiles: Profile[]) {
-    this._profiles = profiles;
+  public getName(): string {
+    return this.name;
   }
 
-  get createdAt(): Date | undefined {
-    return this._createdAt;
+  public setName(name: string): void {
+    this.name = name;
   }
 
-  set createdAt(createdAt: Date | undefined) {
-    this._createdAt = createdAt;
+  public getProfiles(): Profile[] {
+    return this.profiles;
   }
 
-  get updatedAt(): Date | undefined {
-    return this._updatedAt;
+  public setProfiles(profiles: Profile[]): void {
+    this.profiles = profiles;
   }
 
-  set updatedAt(updatedAt: Date | undefined) {
-    this._updatedAt = updatedAt;
+  public getCreatedAt(): Date | undefined {
+    return this.created_at;
+  }
+
+  public setCreatedAt(created_at: Date): void {
+    this.created_at = created_at;
+  }
+
+  public getUpdatedAt(): Date | null | undefined {
+    return this.updated_at;
+  }
+
+  public setUpdatedAt(updated_at: Date | null): void {
+    this.updated_at = updated_at;
   }
 }

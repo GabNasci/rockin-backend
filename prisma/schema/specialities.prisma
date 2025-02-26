@@ -3,5 +3,5 @@ model specialities {
   name                  String
   musician_specialities musician_specialities[]
   created_at            DateTime                @default(now())
-  updated_at            DateTime                @updatedAt
+  updated_at            DateTime?               @updatedAt
 }

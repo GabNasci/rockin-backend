@@ -1,24 +1,24 @@
 import { Profile } from './Profile';
 
-interface SpecialityProps {
+interface RecomendationProps {
   id?: number;
-  name: string;
-  profiles: Profile[];
+  profile_id: number;
+  profile?: Profile;
   created_at?: Date;
   updated_at?: Date | null;
 }
 
-export class Speciality {
+export class Recomendation {
   private id?: number;
-  private name: string;
-  private profiles: Profile[];
+  private profile_id: number;
+  private profile?: Profile;
   private created_at?: Date;
   private updated_at?: Date | null;
 
-  constructor(props: SpecialityProps) {
+  constructor(props: RecomendationProps) {
     this.id = props.id;
-    this.name = props.name;
-    this.profiles = props.profiles;
+    this.profile_id = props.profile_id;
+    this.profile = props.profile;
     this.created_at = props.created_at;
     this.updated_at = props.updated_at;
   }
@@ -31,20 +31,20 @@ export class Speciality {
     this.id = id;
   }
 
-  public getName(): string {
-    return this.name;
+  public getProfileId(): number {
+    return this.profile_id;
   }
 
-  public setName(name: string): void {
-    this.name = name;
+  public setProfileId(profile_id: number): void {
+    this.profile_id = profile_id;
   }
 
-  public getProfiles(): Profile[] {
-    return this.profiles;
+  public getProfile(): Profile | undefined {
+    return this.profile;
   }
 
-  public setProfiles(profiles: Profile[]): void {
-    this.profiles = profiles;
+  public setProfile(profile: Profile): void {
+    this.profile = profile;
   }
 
   public getCreatedAt(): Date | undefined {

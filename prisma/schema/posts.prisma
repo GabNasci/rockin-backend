@@ -9,5 +9,5 @@ model posts {
   tagged_profiles tagged_profiles_posts[]
   meedias         medias[]
   created_at      DateTime                @default(now())
-  updated_at      DateTime                @updatedAt
+  updated_at      DateTime?               @updatedAt
 }

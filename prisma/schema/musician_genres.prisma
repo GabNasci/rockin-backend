@@ -1,9 +1,9 @@
 model musician_genres {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   profile_id Int
   genre_id   Int
-  profile    profiles @relation(fields: [profile_id], references: [id])
-  genre      genres   @relation(fields: [genre_id], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  profile    profiles  @relation(fields: [profile_id], references: [id])
+  genre      genres    @relation(fields: [genre_id], references: [id])
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
 }

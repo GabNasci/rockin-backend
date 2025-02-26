@@ -1,7 +1,6 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { CreateUserUseCase } from 'src/modules/user/useCases/createUserUseCase';
 import { CreateUserBodyDTO } from './dtos/CreateUserBodyDTO';
-
 @Controller('users')
 export class UserController {
   constructor(private createUserUseCase: CreateUserUseCase) {}
@@ -12,9 +11,11 @@ export class UserController {
     Logger.log(`Creating user with email ${body.email}`);
     const { email, password } = body;
 
-    await this.createUserUseCase.execute({
+    const user = await this.createUserUseCase.execute({
       email,
       password,
     });
+
+    return user;
   }
 }

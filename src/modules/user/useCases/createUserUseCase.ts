@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from '../repositories/UserRepository';
-import { User } from '../entities/User';
+import { AppException } from 'src/exceptions/appException';
 
 interface CreateUserUseCaseRequest {
   email: string;
@@ -12,11 +12,17 @@ export class CreateUserUseCase {
   constructor(private userRepository: UserRepository) {}
 
   async execute({ email, password }: CreateUserUseCaseRequest) {
-    const user = new User({
-      email: email,
-      password: password,
-    });
+    const user = await this.userRepository.findByEmail(email);
 
-    await this.userRepository.create(user);
+    if (user) {
+      Logger.log(`User found: ${user?.id}`);
+      Logger.error('User already exists');
+      throw new AppException({
+        message: 'User already exists',
+        status: 400,
+      });
+    }
+
+    return await this.userRepository.create({ email, password });
   }
 }

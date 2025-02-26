@@ -4,5 +4,5 @@ model genres {
   band_genres     band_genres[]
   musician_genres musician_genres[]
   created_at      DateTime          @default(now())
-  updated_at      DateTime          @updatedAt
+  updated_at      DateTime?         @updatedAt
 }
