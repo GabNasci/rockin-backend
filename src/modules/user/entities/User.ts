@@ -1,6 +1,9 @@
 interface UserProps {
+  id?: number;
   email: string;
   password: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export class User {
@@ -11,8 +14,11 @@ export class User {
   private _updatedAt?: Date;
 
   constructor(props: UserProps) {
+    this._id = props.id;
     this._email = props.email;
     this._password = props.password;
+    this._createdAt = props.createdAt;
+    this._updatedAt = props.updatedAt;
   }
 
   public get id(): number | undefined {

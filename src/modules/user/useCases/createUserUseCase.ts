@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../repositories/UserReposoitory';
+import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../entities/User';
 
 interface CreateUserUseCaseRequest {

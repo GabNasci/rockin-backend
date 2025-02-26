@@ -20,7 +20,6 @@ model profiles {
   musician_specialities musician_specialities[]
   recomendations        recomendations[]
   conversation_profiles conversation_profiles[]
-  messages              messages[]
   created_at            DateTime                @default(now())
   updated_at            DateTime                @updatedAt
 }
