@@ -1,6 +1,6 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { CreateUserUseCase } from 'src/modules/user/useCases/createUserUseCase';
-import { CreateUserBodyDTO } from './dtos/CreateUserBodyDTO';
+import { CreateUserBodyDTO } from './dtos/createUserBody.dto';
 @Controller('users')
 export class UserController {
   constructor(private createUserUseCase: CreateUserUseCase) {}

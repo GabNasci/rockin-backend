@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from '../repositories/UserRepository';
-import { AppException } from 'src/exceptions/appException';
+import { AppException } from 'src/errors/appException';
+import { CreateUserResponseDTO } from '../dtos/createUserResponse.dto';
 
 interface CreateUserUseCaseRequest {
   email: string;
@@ -11,18 +12,24 @@ interface CreateUserUseCaseRequest {
 export class CreateUserUseCase {
   constructor(private userRepository: UserRepository) {}
 
-  async execute({ email, password }: CreateUserUseCaseRequest) {
+  async execute({
+    email,
+    password,
+  }: CreateUserUseCaseRequest): Promise<CreateUserResponseDTO> {
     const user = await this.userRepository.findByEmail(email);
 
     if (user) {
       Logger.log(`User found: ${user?.id}`);
-      Logger.error('User already exists');
+      Logger.error('email already registered');
+
       throw new AppException({
-        message: 'User already exists',
-        status: 400,
+        message: 'email already registered',
+        statusCode: 400,
       });
     }
 
-    return await this.userRepository.create({ email, password });
+    const userCreated = await this.userRepository.create({ email, password });
+
+    return new CreateUserResponseDTO(userCreated);
   }
 }

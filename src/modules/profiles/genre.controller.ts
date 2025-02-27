@@ -8,7 +8,6 @@ export class GenreController {
   @Get()
   async createUser() {
     Logger.log('/genres', 'GET');
-
     return await this.findAllGenresUseCase.execute();
   }
 }
