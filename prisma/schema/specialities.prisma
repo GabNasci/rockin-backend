@@ -1,7 +1,9 @@
-model specialities {
-  id                    Int                     @id @default(autoincrement())
+model Speciality {
+  id                    Int                  @id @default(autoincrement())
   name                  String
-  musician_specialities musician_specialities[]
-  created_at            DateTime                @default(now())
-  updated_at            DateTime?               @updatedAt
+  musician_specialities MusicianSpeciality[]
+  created_at            DateTime             @default(now())
+  updated_at            DateTime?            @updatedAt
+
+  @@map("specialities")
 }

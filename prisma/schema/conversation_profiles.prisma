@@ -1,9 +1,11 @@
-model conversation_profiles {
-  id              Int            @id @default(autoincrement())
+model ConversationProfile {
+  id              Int           @id @default(autoincrement())
   profile_id      Int
   conversation_id Int
-  profile         profiles?      @relation(fields: [profile_id], references: [id])
-  conversation    conversations? @relation(fields: [conversation_id], references: [id])
-  created_at      DateTime       @default(now())
-  updated_at      DateTime?      @updatedAt
+  profile         Profile?      @relation(fields: [profile_id], references: [id])
+  conversation    Conversation? @relation(fields: [conversation_id], references: [id])
+  created_at      DateTime      @default(now())
+  updated_at      DateTime?     @updatedAt
+
+  @@map("conversation_profiles")
 }

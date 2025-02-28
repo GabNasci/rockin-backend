@@ -1,7 +1,9 @@
-model profile_types {
-  id         Int        @id @default(autoincrement())
+model ProfileType {
+  id         Int       @id @default(autoincrement())
   name       String
-  profiles   profiles[]
-  created_at DateTime   @default(now())
-  updated_at DateTime?  @updatedAt
+  profiles   Profile[]
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("profile_types")
 }

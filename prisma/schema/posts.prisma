@@ -1,13 +1,15 @@
-model posts {
-  id              Int                     @id @default(autoincrement())
+model Post {
+  id              Int                 @id @default(autoincrement())
   text            String?
   link            String?
   datetime        DateTime
   profile_id      Int
-  supports        supports[]
-  profile         profiles                @relation(fields: [profile_id], references: [id])
-  tagged_profiles tagged_profiles_posts[]
-  meedias         medias[]
-  created_at      DateTime                @default(now())
-  updated_at      DateTime?               @updatedAt
+  supports        Support[]
+  profile         Profile             @relation(fields: [profile_id], references: [id])
+  tagged_profiles TaggedProfilePost[]
+  medias          Media[]
+  created_at      DateTime            @default(now())
+  updated_at      DateTime?           @updatedAt
+
+  @@map("posts")
 }

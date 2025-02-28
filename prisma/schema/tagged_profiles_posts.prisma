@@ -1,9 +1,11 @@
-model tagged_profiles_posts {
+model TaggedProfilePost {
   id         Int       @id @default(autoincrement())
   profile_id Int
   post_id    Int
-  profile    profiles  @relation(fields: [profile_id], references: [id])
-  post       posts     @relation(fields: [post_id], references: [id])
+  profile    Profile   @relation(fields: [profile_id], references: [id])
+  post       Post      @relation(fields: [post_id], references: [id])
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
+
+  @@map("tagged_profiles_posts")
 }
