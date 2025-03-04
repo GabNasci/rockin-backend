@@ -1,9 +1,11 @@
-model musician_specialities {
-  id            Int          @id @default(autoincrement())
+model MusicianSpeciality {
+  id            Int        @id @default(autoincrement())
   profile_id    Int
   speciality_id Int
-  profile       profiles     @relation(fields: [profile_id], references: [id])
-  speciality    specialities @relation(fields: [speciality_id], references: [id])
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
+  profile       Profile    @relation(fields: [profile_id], references: [id])
+  speciality    Speciality @relation(fields: [speciality_id], references: [id])
+  created_at    DateTime   @default(now())
+  updated_at    DateTime?  @updatedAt
+
+  @@map("musician_specialities")
 }

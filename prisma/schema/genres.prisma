@@ -1,8 +1,10 @@
-model genres {
-  id              Int               @id @default(autoincrement())
+model Genre {
+  id              Int             @id @default(autoincrement())
   name            String
-  band_genres     band_genres[]
-  musician_genres musician_genres[]
-  created_at      DateTime          @default(now())
-  updated_at      DateTime          @updatedAt
+  band_genres     BandGenre[]
+  musician_genres MusicianGenre[]
+  created_at      DateTime        @default(now())
+  updated_at      DateTime?       @updatedAt
+
+  @@map("genres")
 }

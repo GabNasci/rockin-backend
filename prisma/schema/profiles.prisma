@@ -1,26 +1,27 @@
-model profiles {
-  id                    Int                     @id @default(autoincrement())
+model Profile {
+  id                    Int                   @id @default(autoincrement())
   name                  String
-  handle                String                  @unique
+  handle                String                @unique
   about                 String?
   avatar                String?
   spotify_id            String?
   profile_type_id       Int
   user_id               Int?
-  bands                 bands?
-  profile_type          profile_types?          @relation(fields: [profile_type_id], references: [id])
-  user                  users?                  @relation(fields: [user_id], references: [id])
-  images                images[]
-  locations             locations?
-  supports              supports[]
-  posts                 posts[]
-  tagged_profiles_posts tagged_profiles_posts[]
-  musician_bands        musician_bands[]
-  musician_genres       musician_genres[]
-  musician_specialities musician_specialities[]
-  recomendations        recomendations[]
-  conversation_profiles conversation_profiles[]
-  messages              messages[]
-  created_at            DateTime                @default(now())
-  updated_at            DateTime                @updatedAt
+  band                  Band?
+  profile_type          ProfileType?          @relation(fields: [profile_type_id], references: [id])
+  user                  User?                 @relation(fields: [user_id], references: [id])
+  images                Image[]
+  locations             Location?
+  supports              Support[]
+  posts                 Post[]
+  tagged_profiles_posts TaggedProfilePost[]
+  musician_bands        MusicianBand[]
+  musician_genres       MusicianGenre[]
+  musician_specialities MusicianSpeciality[]
+  recomendations        Recomendation[]
+  conversation_profiles ConversationProfile[]
+  created_at            DateTime              @default(now())
+  updated_at            DateTime?             @updatedAt
+
+  @@map("profiles")
 }
