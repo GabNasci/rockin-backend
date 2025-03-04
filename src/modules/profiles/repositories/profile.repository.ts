@@ -23,6 +23,9 @@ export class ProfileRepository {
       where: {
         id,
       },
+      include: {
+        specialities: true,
+      },
     });
   }
 
@@ -30,6 +33,50 @@ export class ProfileRepository {
     return await this.prisma.profile.findUnique({
       where: {
         handle,
+      },
+    });
+  }
+
+  async removeSpecialities(profileId: number): Promise<Profile> {
+    return this.prisma.profile.update({
+      where: {
+        id: profileId,
+      },
+      data: {
+        specialities: {
+          set: [],
+        },
+      },
+    });
+  }
+
+  async assignSpecialities(
+    profileId: number,
+    specialityIds: number[],
+  ): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id: profileId,
+      },
+      data: {
+        specialities: {
+          connect: specialityIds.map((specialityId) => ({ id: specialityId })),
+        },
+      },
+      include: {
+        specialities: true,
+      },
+    });
+  }
+
+  async update(id: number, data: Prisma.ProfileUpdateInput): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data,
+      include: {
+        specialities: true,
       },
     });
   }

@@ -12,6 +12,14 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
+  @Post('/specialities/add')
+  async addSpecialitiesToProfile(
+    @Body() body: { profileId: number; specialityIds: number[] },
+  ) {
+    Logger.log('/profiles/specialities/add', 'POST');
+    return await this.profileService.addSpecialities(body);
+  }
+
   @Get()
   async getAllProfiles() {
     Logger.log('/profiles', 'GET');

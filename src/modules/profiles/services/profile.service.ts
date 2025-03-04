@@ -5,6 +5,7 @@ import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
 import { UserRepository } from '@modules/user/repositories/user.repository';
 import { AppException } from '@/errors/appException';
+import { SpecialityRepository } from '../repositories/speciality.repository';
 
 @Injectable()
 export class ProfileService {
@@ -12,6 +13,7 @@ export class ProfileService {
     private readonly profileRepository: ProfileRepository,
     private readonly profileTypeRepository: ProfileTypeRepository,
     private readonly userRepository: UserRepository,
+    private readonly specialityRepository: SpecialityRepository,
   ) {}
 
   async create(profile: CreateProfileBodyDTO): Promise<Profile> {
@@ -94,6 +96,44 @@ export class ProfileService {
         statusCode: 500,
       });
     }
+  }
+
+  async addSpecialities({
+    profileId,
+    specialityIds,
+  }: {
+    profileId: number;
+    specialityIds: number[];
+  }): Promise<Profile> {
+    Logger.log('Adding speciality to profile', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        message: 'profile not found',
+        statusCode: 400,
+      });
+    }
+
+    const specialitiesFounded =
+      await this.specialityRepository.findMany(specialityIds);
+
+    if (specialitiesFounded.length !== specialityIds.length) {
+      Logger.error('Speciality not found', 'ProfileService');
+      throw new AppException({
+        message: 'speciality not found',
+        statusCode: 400,
+      });
+    }
+
+    Logger.log('Removing specialities from profile', 'ProfileService');
+    await this.profileRepository.removeSpecialities(profileId);
+
+    Logger.log('Assigning specialities to profile', 'ProfileService');
+    return await this.profileRepository.assignSpecialities(
+      profile.id,
+      specialitiesFounded.map((speciality) => speciality.id),
+    );
   }
 
   async findAll(): Promise<Profile[]> {

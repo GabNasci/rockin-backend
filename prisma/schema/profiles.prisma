@@ -7,6 +7,7 @@ model profiles {
   spotify_id            String?
   profile_type_id       Int
   user_id               Int?
+<<<<<<< HEAD
   bands                 bands?
   profile_type          profile_types?          @relation(fields: [profile_type_id], references: [id])
   user                  users?                  @relation(fields: [user_id], references: [id])
@@ -23,4 +24,23 @@ model profiles {
   messages              messages[]
   created_at            DateTime                @default(now())
   updated_at            DateTime                @updatedAt
+=======
+  band                  Band?
+  profile_type          ProfileType?          @relation(fields: [profile_type_id], references: [id])
+  user                  User?                 @relation(fields: [user_id], references: [id])
+  images                Image[]
+  locations             Location?
+  supports              Support[]
+  posts                 Post[]
+  tagged_profiles_posts TaggedProfilePost[]
+  musician_bands        MusicianBand[]
+  musician_genres       MusicianGenre[]
+  specialities          Speciality[]
+  recomendations        Recomendation[]
+  conversation_profiles ConversationProfile[]
+  created_at            DateTime              @default(now())
+  updated_at            DateTime?             @updatedAt
+
+  @@map("profiles")
+>>>>>>> 5af6e25 (feat: adding specialities)
 }

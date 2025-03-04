@@ -1,7 +1,18 @@
+<<<<<<< HEAD
 model specialities {
   id                    Int                     @id @default(autoincrement())
   name                  String
   musician_specialities musician_specialities[]
   created_at            DateTime                @default(now())
   updated_at            DateTime                @updatedAt
+=======
+model Speciality {
+  id         Int       @id @default(autoincrement())
+  name       String
+  profiles   Profile[]
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("specialities")
+>>>>>>> 5af6e25 (feat: adding specialities)
 }
