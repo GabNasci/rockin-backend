@@ -17,6 +17,7 @@ export class GenreRepository {
   async findAll(): Promise<Genre[]> {
     return await this.prisma.genre.findMany();
   }
+<<<<<<< HEAD
 
   async findMany(ids: number[]): Promise<Genre[]> {
     return await this.prisma.genre.findMany({
@@ -27,4 +28,6 @@ export class GenreRepository {
       },
     });
   }
+=======
+>>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
 }

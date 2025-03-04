@@ -1,9 +1,11 @@
-model images {
+model Image {
   id         Int       @id @default(autoincrement())
   url        String
   type       String?
   profile_id Int
-  profile    profiles? @relation(fields: [profile_id], references: [id])
+  profile    Profile?  @relation(fields: [profile_id], references: [id])
   created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  updated_at DateTime? @updatedAt
+
+  @@map("images")
 }

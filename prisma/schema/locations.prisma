@@ -1,4 +1,4 @@
-model locations {
+model Location {
   id         Int       @id @default(autoincrement())
   latitude   String
   longitude  String
@@ -6,7 +6,9 @@ model locations {
   city       String?
   state      String?
   profile_id Int       @unique
-  profile    profiles? @relation(fields: [profile_id], references: [id])
+  profile    Profile?  @relation(fields: [profile_id], references: [id])
   created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  updated_at DateTime? @updatedAt
+
+  @@map("locations")
 }

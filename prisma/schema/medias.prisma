@@ -1,9 +1,11 @@
-model medias {
-  id         Int      @id @default(autoincrement())
+model Media {
+  id         Int       @id @default(autoincrement())
   url        String
   type       String?
   post_id    Int
-  posts      posts?   @relation(fields: [post_id], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  posts      Post?     @relation(fields: [post_id], references: [id])
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("medias")
 }
