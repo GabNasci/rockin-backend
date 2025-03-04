@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 model genres {
   id              Int               @id @default(autoincrement())
   name            String
@@ -5,4 +6,15 @@ model genres {
   musician_genres musician_genres[]
   created_at      DateTime          @default(now())
   updated_at      DateTime          @updatedAt
+=======
+model Genre {
+  id          Int         @id @default(autoincrement())
+  name        String
+  band_genres BandGenre[]
+  profiles    Profile[]
+  created_at  DateTime    @default(now())
+  updated_at  DateTime?   @updatedAt
+
+  @@map("genres")
+>>>>>>> 08ea962 (feat: adding genres)
 }

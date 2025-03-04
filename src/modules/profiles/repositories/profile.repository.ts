@@ -37,20 +37,7 @@ export class ProfileRepository {
     });
   }
 
-  async removeSpecialities(profileId: number): Promise<Profile> {
-    return this.prisma.profile.update({
-      where: {
-        id: profileId,
-      },
-      data: {
-        specialities: {
-          set: [],
-        },
-      },
-    });
-  }
-
-  async assignSpecialities(
+  async addSpecialities(
     profileId: number,
     specialityIds: number[],
   ): Promise<Profile> {
@@ -65,6 +52,48 @@ export class ProfileRepository {
       },
       include: {
         specialities: true,
+      },
+    });
+  }
+
+  async removeSpecialities(profileId: number): Promise<Profile> {
+    return this.prisma.profile.update({
+      where: {
+        id: profileId,
+      },
+      data: {
+        specialities: {
+          set: [],
+        },
+      },
+    });
+  }
+
+  async addGenres(profileId: number, genreIds: number[]): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id: profileId,
+      },
+      data: {
+        genres: {
+          connect: genreIds.map((genreId) => ({ id: genreId })),
+        },
+      },
+      include: {
+        genres: true,
+      },
+    });
+  }
+
+  async removeGenres(profileId: number): Promise<Profile> {
+    return this.prisma.profile.update({
+      where: {
+        id: profileId,
+      },
+      data: {
+        genres: {
+          set: [],
+        },
       },
     });
   }

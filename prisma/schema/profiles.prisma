@@ -34,7 +34,7 @@ model profiles {
   posts                 Post[]
   tagged_profiles_posts TaggedProfilePost[]
   musician_bands        MusicianBand[]
-  musician_genres       MusicianGenre[]
+  genres                Genre[]
   specialities          Speciality[]
   recomendations        Recomendation[]
   conversation_profiles ConversationProfile[]

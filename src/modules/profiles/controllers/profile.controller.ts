@@ -20,6 +20,14 @@ export class ProfileController {
     return await this.profileService.addSpecialities(body);
   }
 
+  @Post('/genres/add')
+  async addGenresToProfile(
+    @Body() body: { profileId: number; genreIds: number[] },
+  ) {
+    Logger.log('/profiles/genres/add', 'POST');
+    return await this.profileService.addGenres(body);
+  }
+
   @Get()
   async getAllProfiles() {
     Logger.log('/profiles', 'GET');
