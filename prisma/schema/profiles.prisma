@@ -7,19 +7,20 @@ model Profile {
   spotify_id      String?
   profile_type_id Int
   user_id         Int?
-  band            Band?
+  band            Band?           @relation("profile_band")
+  band_owner      Band?           @relation("owner_band")
   profile_type    ProfileType?    @relation(fields: [profile_type_id], references: [id])
   user            User?           @relation(fields: [user_id], references: [id])
   images          Image[]
   locations       Location?
   supports        Support[]
   posts           Post[]
-  tagged_posts    Post[]          @relation("TaggedPosts")
-  bands           Band[]          @relation("BandMembers")
-  genres          Genre[]
-  specialities    Speciality[]
+  tagged_posts    Post[]          @relation("posts_profiles")
+  bands           Band[]          @relation("profiles_bands")
+  genres          Genre[]         @relation("profiles_genres")
+  specialities    Speciality[]    @relation("profiles_specialities")
   recomendations  Recomendation[]
-  conversations   Conversation[]
+  conversations   Conversation[]  @relation("profiles_conversations")
   created_at      DateTime        @default(now())
   updated_at      DateTime?       @updatedAt
 

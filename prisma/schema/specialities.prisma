@@ -1,7 +1,7 @@
 model Speciality {
   id         Int       @id @default(autoincrement())
   name       String
-  profiles   Profile[]
+  profiles   Profile[] @relation("profiles_specialities")
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 

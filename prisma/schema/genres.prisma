@@ -1,8 +1,8 @@
 model Genre {
   id         Int       @id @default(autoincrement())
   name       String
-  bands      Band[]
-  profiles   Profile[]
+  bands      Band[]    @relation("bands_genres")
+  profiles   Profile[] @relation("profiles_genres")
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 

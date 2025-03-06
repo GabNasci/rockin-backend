@@ -5,7 +5,7 @@ model Post {
   profile_id      Int
   supports        Support[]
   profile         Profile   @relation(fields: [profile_id], references: [id])
-  tagged_profiles Profile[] @relation("TaggedPosts")
+  tagged_profiles Profile[] @relation("posts_profiles")
   medias          Media[]
   created_at      DateTime  @default(now())
   updated_at      DateTime? @updatedAt
