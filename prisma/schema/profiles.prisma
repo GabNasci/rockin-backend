@@ -1,57 +1,27 @@
 model Profile {
-  id                    Int                   @id @default(autoincrement())
-  name                  String
-  handle                String                @unique
-  about                 String?
-  avatar                String?
-  spotify_id            String?
-  profile_type_id       Int
-  user_id               Int?
-<<<<<<< HEAD
-<<<<<<< HEAD
-  bands                 bands?
-  profile_type          profile_types?          @relation(fields: [profile_type_id], references: [id])
-  user                  users?                  @relation(fields: [user_id], references: [id])
-  images                images[]
-  locations             locations?
-  supports              supports[]
-  posts                 posts[]
-  tagged_profiles_posts tagged_profiles_posts[]
-  musician_bands        musician_bands[]
-  musician_genres       musician_genres[]
-  musician_specialities musician_specialities[]
-  recomendations        recomendations[]
-  conversation_profiles conversation_profiles[]
-  messages              messages[]
-  created_at            DateTime                @default(now())
-  updated_at            DateTime                @updatedAt
-=======
-=======
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
-  band                  Band?
-  profile_type          ProfileType?          @relation(fields: [profile_type_id], references: [id])
-  user                  User?                 @relation(fields: [user_id], references: [id])
-  images                Image[]
-  locations             Location?
-  supports              Support[]
-  posts                 Post[]
-  tagged_profiles_posts TaggedProfilePost[]
-  musician_bands        MusicianBand[]
-<<<<<<< HEAD
-  genres                Genre[]
-  specialities          Speciality[]
-=======
-  musician_genres       MusicianGenre[]
-  musician_specialities MusicianSpeciality[]
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
-  recomendations        Recomendation[]
-  conversation_profiles ConversationProfile[]
-  created_at            DateTime              @default(now())
-  updated_at            DateTime?             @updatedAt
+  id              Int             @id @default(autoincrement())
+  name            String
+  handle          String          @unique
+  about           String?
+  avatar          String?
+  spotify_id      String?
+  profile_type_id Int
+  user_id         Int?
+  band            Band?
+  profile_type    ProfileType?    @relation(fields: [profile_type_id], references: [id])
+  user            User?           @relation(fields: [user_id], references: [id])
+  images          Image[]
+  locations       Location?
+  supports        Support[]
+  posts           Post[]
+  tagged_posts    Post[]          @relation("TaggedPosts")
+  bands           Band[]          @relation("BandMembers")
+  genres          Genre[]
+  specialities    Speciality[]
+  recomendations  Recomendation[]
+  conversations   Conversation[]
+  created_at      DateTime        @default(now())
+  updated_at      DateTime?       @updatedAt
 
   @@map("profiles")
-<<<<<<< HEAD
->>>>>>> 5af6e25 (feat: adding specialities)
-=======
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
 }
