@@ -1,29 +1,9 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-model specialities {
-  id                    Int                     @id @default(autoincrement())
-  name                  String
-  musician_specialities musician_specialities[]
-  created_at            DateTime                @default(now())
-  updated_at            DateTime                @updatedAt
-=======
 model Speciality {
   id         Int       @id @default(autoincrement())
   name       String
-  profiles   Profile[]
+  profiles   Profile[] @relation("profiles_specialities")
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 
   @@map("specialities")
->>>>>>> 5af6e25 (feat: adding specialities)
-=======
-model Speciality {
-  id                    Int                  @id @default(autoincrement())
-  name                  String
-  musician_specialities MusicianSpeciality[]
-  created_at            DateTime             @default(now())
-  updated_at            DateTime?            @updatedAt
-
-  @@map("specialities")
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
 }
