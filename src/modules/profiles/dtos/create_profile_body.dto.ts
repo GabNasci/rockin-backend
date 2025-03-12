@@ -1,7 +1,9 @@
 import {
+  IsArray,
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -42,4 +44,14 @@ export class CreateProfileBodyDTO {
   })
   @IsNotEmpty()
   handle: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  specialities?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  genres?: number[];
 }

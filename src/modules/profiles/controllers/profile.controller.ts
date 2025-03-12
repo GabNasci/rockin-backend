@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Put } from '@nestjs/common';
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
 
@@ -12,7 +12,7 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
-  @Post('/specialities/add')
+  @Put('/specialities/add')
   async addSpecialitiesToProfile(
     @Body() body: { profileId: number; specialityIds: number[] },
   ) {
@@ -20,7 +20,7 @@ export class ProfileController {
     return await this.profileService.addSpecialities(body);
   }
 
-  @Post('/genres/add')
+  @Put('/genres/add')
   async addGenresToProfile(
     @Body() body: { profileId: number; genreIds: number[] },
   ) {

@@ -7,6 +7,7 @@ import { UserRepository } from '@modules/user/repositories/user.repository';
 import { AppException } from '@/errors/appException';
 import { SpecialityRepository } from '../repositories/speciality.repository';
 import { GenreRepository } from '../repositories/genre.repository';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class ProfileService {
@@ -60,9 +61,11 @@ export class ProfileService {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(profile.password, 10);
+
     const user = await this.userRepository.create({
       email: profile.email,
-      password: profile.password,
+      password: hashedPassword,
     });
 
     if (!user) {
@@ -86,6 +89,16 @@ export class ProfileService {
           connect: {
             id: profile.profileTypeId,
           },
+        },
+        specialities: {
+          connect: profile?.specialities?.map((specialityId) => ({
+            id: specialityId,
+          })),
+        },
+        genres: {
+          connect: profile?.genres?.map((genreId) => ({
+            id: genreId,
+          })),
         },
       });
 

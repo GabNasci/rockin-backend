@@ -17,7 +17,6 @@ export class SpecialityRepository {
   async findAll(): Promise<Speciality[]> {
     return await this.prisma.genre.findMany();
   }
-<<<<<<< HEAD
 
   async findById(id: number): Promise<Speciality | null> {
     return await this.prisma.speciality.findUnique({
@@ -36,6 +35,4 @@ export class SpecialityRepository {
       },
     });
   }
-=======
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
 }
