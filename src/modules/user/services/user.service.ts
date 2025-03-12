@@ -36,6 +36,7 @@ export class UserService {
       Logger.log(`User not found: ${email}`);
       Logger.error('email not found');
       throw new AppException({
+        error: 'Unauthorized',
         message: 'invalid credentials',
         statusCode: 401,
       });
@@ -47,6 +48,7 @@ export class UserService {
       Logger.log(`User found: ${user?.id}`);
       Logger.error('password not match');
       throw new AppException({
+        error: 'Unauthorized',
         message: 'invalid credentials',
         statusCode: 401,
       });
