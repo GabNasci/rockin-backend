@@ -15,12 +15,19 @@ export class ProfileRepository {
         profile_type: true,
         specialities: true,
         genres: true,
+        locations: true,
       },
     });
   }
 
   async findAll(): Promise<Profile[]> {
-    return await this.prisma.profile.findMany();
+    return await this.prisma.profile.findMany({
+      include: {
+        specialities: true,
+        genres: true,
+        locations: true,
+      },
+    });
   }
 
   async findById(id: number): Promise<Profile | null> {

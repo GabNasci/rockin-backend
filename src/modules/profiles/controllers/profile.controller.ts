@@ -1,6 +1,15 @@
-import { Body, Controller, Get, Logger, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
+import { AuthGuard } from '@modules/auth/guards/auth.guard';
 
 @Controller('profiles')
 export class ProfileController {
@@ -12,6 +21,7 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
+  @UseGuards(AuthGuard)
   @Put('/specialities/add')
   async addSpecialitiesToProfile(
     @Body() body: { profileId: number; specialityIds: number[] },
@@ -20,6 +30,7 @@ export class ProfileController {
     return await this.profileService.addSpecialities(body);
   }
 
+  @UseGuards(AuthGuard)
   @Put('/genres/add')
   async addGenresToProfile(
     @Body() body: { profileId: number; genreIds: number[] },

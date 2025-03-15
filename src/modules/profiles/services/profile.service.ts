@@ -63,20 +63,20 @@ export class ProfileService {
 
     const hashedPassword = await bcrypt.hash(profile.password, 10);
 
-    const user = await this.userRepository.create({
-      email: profile.email,
-      password: hashedPassword,
-    });
-
-    if (!user) {
-      Logger.error('User not created', 'ProfileService');
-      throw new AppException({
-        message: 'user not created',
-        statusCode: 400,
-      });
-    }
-
     try {
+      const user = await this.userRepository.create({
+        email: profile.email,
+        password: hashedPassword,
+      });
+
+      if (!user) {
+        Logger.error('User not created', 'ProfileService');
+        throw new AppException({
+          message: 'user not created',
+          statusCode: 400,
+        });
+      }
+
       const newProfile = await this.profileRepository.create({
         name: profile.name,
         handle: profile.handle,
@@ -99,6 +99,15 @@ export class ProfileService {
           connect: profile?.genres?.map((genreId) => ({
             id: genreId,
           })),
+        },
+        locations: {
+          create: {
+            latitude: profile.location.latitude,
+            longitude: profile.location.longitude,
+            city: profile.location?.city,
+            state: profile.location?.state,
+            country: profile.location?.country,
+          },
         },
       });
 
