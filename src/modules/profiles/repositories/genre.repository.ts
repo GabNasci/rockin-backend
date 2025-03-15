@@ -27,4 +27,12 @@ export class GenreRepository {
       },
     });
   }
+
+  async findById(id: number): Promise<Genre | null> {
+    return await this.prisma.genre.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
 }

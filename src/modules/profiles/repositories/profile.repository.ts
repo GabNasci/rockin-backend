@@ -1,18 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Profile } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
+import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 
 @Injectable()
 export class ProfileRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(profile: Prisma.ProfileCreateInput): Promise<Profile> {
-    return await this.prisma.profile.create({
+  async create(profile: CreateProfileBodyDTO, userId: number) {
+    return this.prisma.profile.create({
       data: {
-        ...profile,
+        name: profile.name,
+        handle: profile.handle,
+        user: {
+          connect: { id: userId },
+        },
+        profile_type: {
+          connect: { id: profile.profileTypeId },
+        },
+        specialities: {
+          connect: profile?.specialities?.map((id) => ({ id })),
+        },
+        genres: {
+          connect: profile?.genres?.map((id) => ({ id })),
+        },
+        locations: {
+          create: {
+            latitude: profile.location.latitude,
+            longitude: profile.location.longitude,
+            city: profile.location?.city,
+            state: profile.location?.state,
+            country: profile.location?.country,
+          },
+        },
       },
       include: {
-        profile_type: true,
         specialities: true,
         genres: true,
         locations: true,
@@ -129,6 +151,18 @@ export class ProfileRepository {
       data,
       include: {
         specialities: true,
+      },
+    });
+  }
+
+  async findByUserIdAndProfileId(
+    userId: number,
+    profileId: number,
+  ): Promise<Profile | null> {
+    return await this.prisma.profile.findFirst({
+      where: {
+        user_id: userId,
+        id: profileId,
       },
     });
   }
