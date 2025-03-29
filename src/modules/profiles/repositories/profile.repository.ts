@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, Profile } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
+import { searchProfiles } from '@prisma/client/sql';
 
 @Injectable()
 export class ProfileRepository {
@@ -52,6 +53,49 @@ export class ProfileRepository {
     });
   }
 
+  async search(
+    skip: number,
+    take: number,
+    search: string,
+    radius: number,
+    latitude?: number | null,
+    longitude?: number | null,
+  ): Promise<Profile[]> {
+    let profileIds: number[] = [];
+    const hasCoordinates =
+      latitude && longitude && latitude !== null && longitude !== null;
+
+    if (hasCoordinates) {
+      const profiles = await this.prisma.$queryRawTyped(
+        searchProfiles(latitude, longitude, radius),
+      );
+      profileIds = profiles.map((profile) => profile.id);
+    }
+
+    return await this.prisma.profile.findMany({
+      include: {
+        specialities: true,
+        genres: true,
+        locations: true,
+      },
+      where: {
+        id: {
+          in: profileIds,
+        },
+        name: {
+          contains: search,
+          mode: 'insensitive',
+        },
+      },
+      skip,
+      take,
+    });
+  }
+
+  async count(): Promise<number> {
+    return await this.prisma.profile.count();
+  }
+
   async findById(id: number): Promise<Profile | null> {
     return await this.prisma.profile.findUnique({
       where: {
@@ -67,6 +111,17 @@ export class ProfileRepository {
     return await this.prisma.profile.findUnique({
       where: {
         handle,
+      },
+    });
+  }
+
+  async findByUserId(userId: number) {
+    return await this.prisma.profile.findFirst({
+      where: {
+        user_id: userId,
+      },
+      include: {
+        locations: true,
       },
     });
   }

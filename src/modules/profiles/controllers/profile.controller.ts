@@ -14,6 +14,7 @@ import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
+import { SearchRequestBodyDTO } from '../dtos/search_request_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -57,5 +58,21 @@ export class ProfileController {
   async getAllProfiles() {
     Logger.log('/profiles', 'GET');
     return await this.profileService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/search')
+  async searchProfiles(
+    @Body() body: SearchRequestBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/search', 'POST');
+    return await this.profileService.search(
+      body.page,
+      body.limit,
+      req.user.id,
+      body.radius,
+      body.search,
+    );
   }
 }
