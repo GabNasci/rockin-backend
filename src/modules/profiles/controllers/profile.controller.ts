@@ -11,7 +11,9 @@ import {
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
 import { AuthGuard } from '@modules/auth/guards/auth.guard';
-import { PayloadDTO } from '@modules/auth/dtos/payload.dto';
+import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
+import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
+import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -26,8 +28,8 @@ export class ProfileController {
   @UseGuards(AuthGuard)
   @Put('/specialities/add')
   async addSpecialitiesToProfile(
-    @Body() body: { profileId: number; specialityIds: number[] },
-    @Request() req: { user: PayloadDTO },
+    @Body() body: AddSpecialitiesBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
   ) {
     Logger.log('/profiles/specialities/add', 'POST');
     return await this.profileService.addSpecialities({
@@ -40,8 +42,8 @@ export class ProfileController {
   @UseGuards(AuthGuard)
   @Put('/genres/add')
   async addGenresToProfile(
-    @Body() body: { profileId: number; genreIds: number[] },
-    @Request() req: { user: PayloadDTO },
+    @Body() body: AddGenresBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
   ) {
     Logger.log('/profiles/genres/add', 'POST');
     return await this.profileService.addGenres({
