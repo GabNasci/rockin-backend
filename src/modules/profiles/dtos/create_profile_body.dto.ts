@@ -1,12 +1,17 @@
 import {
+  IsArray,
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { CreateLocationBodyDTO } from './create_location_body.dto';
+import { Type } from 'class-transformer';
 
 export const NAME_REGEX = /^[a-zA-ZÀ-ÖØ-öø-ÿ\s]+$/;
 
@@ -42,4 +47,19 @@ export class CreateProfileBodyDTO {
   })
   @IsNotEmpty()
   handle: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  specialities?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  genres?: number[];
+
+  @IsNotEmpty()
+  @ValidateNested()
+  @Type(() => CreateLocationBodyDTO)
+  location: CreateLocationBodyDTO;
 }

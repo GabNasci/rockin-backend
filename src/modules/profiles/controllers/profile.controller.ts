@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Put,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
+import { AuthGuard } from '@modules/auth/guards/auth.guard';
+import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
+import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
+import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -12,20 +25,32 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
-  @Post('/specialities/add')
+  @UseGuards(AuthGuard)
+  @Put('/specialities/add')
   async addSpecialitiesToProfile(
-    @Body() body: { profileId: number; specialityIds: number[] },
+    @Body() body: AddSpecialitiesBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
   ) {
     Logger.log('/profiles/specialities/add', 'POST');
-    return await this.profileService.addSpecialities(body);
+    return await this.profileService.addSpecialities({
+      userId: req.user.id,
+      profileId: body.profileId,
+      specialityIds: body.specialityIds,
+    });
   }
 
-  @Post('/genres/add')
+  @UseGuards(AuthGuard)
+  @Put('/genres/add')
   async addGenresToProfile(
-    @Body() body: { profileId: number; genreIds: number[] },
+    @Body() body: AddGenresBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
   ) {
     Logger.log('/profiles/genres/add', 'POST');
-    return await this.profileService.addGenres(body);
+    return await this.profileService.addGenres({
+      userId: req.user.id,
+      profileId: body.profileId,
+      genreIds: body.genreIds,
+    });
   }
 
   @Get()

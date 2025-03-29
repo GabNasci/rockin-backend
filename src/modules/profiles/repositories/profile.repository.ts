@@ -1,36 +1,55 @@
 import { Injectable } from '@nestjs/common';
-<<<<<<< HEAD
 import { Prisma, Profile } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
+import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 
 @Injectable()
 export class ProfileRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(profile: Prisma.ProfileCreateInput): Promise<Profile> {
-    return await this.prisma.profile.create({
+  async create(profile: CreateProfileBodyDTO, userId: number) {
+    return this.prisma.profile.create({
       data: {
-        ...profile,
-=======
-import { ProfileType } from '@prisma/client';
-import { PrismaService } from '@infra/database/prisma/prisma.service';
-
-@Injectable()
-export class ProfileTypeRepository {
-  constructor(private prisma: PrismaService) {}
-
-  async create(name: string): Promise<ProfileType> {
-    return await this.prisma.profileType.create({
-      data: {
-        name,
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
+        name: profile.name,
+        handle: profile.handle,
+        user: {
+          connect: { id: userId },
+        },
+        profile_type: {
+          connect: { id: profile.profileTypeId },
+        },
+        specialities: {
+          connect: profile?.specialities?.map((id) => ({ id })),
+        },
+        genres: {
+          connect: profile?.genres?.map((id) => ({ id })),
+        },
+        locations: {
+          create: {
+            latitude: profile.location.latitude,
+            longitude: profile.location.longitude,
+            city: profile.location?.city,
+            state: profile.location?.state,
+            country: profile.location?.country,
+          },
+        },
+      },
+      include: {
+        specialities: true,
+        genres: true,
+        locations: true,
       },
     });
   }
 
-<<<<<<< HEAD
   async findAll(): Promise<Profile[]> {
-    return await this.prisma.profile.findMany();
+    return await this.prisma.profile.findMany({
+      include: {
+        specialities: true,
+        genres: true,
+        locations: true,
+      },
+    });
   }
 
   async findById(id: number): Promise<Profile | null> {
@@ -48,6 +67,17 @@ export class ProfileTypeRepository {
     return await this.prisma.profile.findUnique({
       where: {
         handle,
+      },
+    });
+  }
+
+  async updateDescription(id: number, description: string): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data: {
+        about: description,
       },
     });
   }
@@ -123,9 +153,17 @@ export class ProfileTypeRepository {
         specialities: true,
       },
     });
-=======
-  async findAll(): Promise<ProfileType[]> {
-    return await this.prisma.profileType.findMany();
->>>>>>> 82b537ca63650e80ddf42e3b546af848bc6cc802
+  }
+
+  async findByUserIdAndProfileId(
+    userId: number,
+    profileId: number,
+  ): Promise<Profile | null> {
+    return await this.prisma.profile.findFirst({
+      where: {
+        user_id: userId,
+        id: profileId,
+      },
+    });
   }
 }
