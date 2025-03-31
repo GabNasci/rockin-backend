@@ -281,7 +281,7 @@ export class ProfileService {
       latitude: latitude,
       longitude: longitude,
     });
-    console.log(total);
+
     return {
       profiles: profiles,
       page: page,
