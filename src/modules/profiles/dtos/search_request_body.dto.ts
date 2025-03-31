@@ -15,9 +15,9 @@ export class SearchRequestBodyDTO {
   limit: number;
   @IsOptional()
   @IsString()
-  search: string;
+  search?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  radius: number;
+  radius?: number;
 }

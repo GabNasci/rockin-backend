@@ -67,12 +67,12 @@ export class ProfileController {
     @Request() req: RequestUserPayloadDTO,
   ) {
     Logger.log('/search', 'POST');
-    return await this.profileService.search(
-      body.page,
-      body.limit,
-      req.user.id,
-      body.radius,
-      body.search,
-    );
+    return await this.profileService.search({
+      userId: req.user.id,
+      page: body.page,
+      limit: body.limit,
+      radius: body.radius,
+      search: body.search,
+    });
   }
 }

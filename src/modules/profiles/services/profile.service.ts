@@ -9,6 +9,7 @@ import { SpecialityRepository } from '../repositories/speciality.repository';
 import { GenreRepository } from '../repositories/genre.repository';
 import * as bcrypt from 'bcryptjs';
 import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
+import formatCoordinates from '@/utils/formatCoordinates';
 
 @Injectable()
 export class ProfileService {
@@ -228,15 +229,21 @@ export class ProfileService {
     return await this.profileRepository.findAll();
   }
 
-  async search(
-    page: number,
-    limit: number,
-    id: number,
-    radius: number,
-    search?: string,
-  ): Promise<SearchResponseBodyDTO> {
+  async search({
+    page,
+    limit,
+    userId,
+    radius,
+    search,
+  }: {
+    page: number;
+    limit: number;
+    userId: number;
+    radius?: number;
+    search?: string;
+  }): Promise<SearchResponseBodyDTO> {
     Logger.log('Searching profiles', 'ProfileService');
-    const user = await this.userRepository.findById(id);
+    const user = await this.userRepository.findById(userId);
     if (!user) {
       Logger.error('User not found', 'ProfileService');
       throw new AppException({
@@ -257,28 +264,32 @@ export class ProfileService {
       });
     }
 
-    const latitude = userProfile.locations?.latitude;
-    const longitude = userProfile.locations?.longitude;
+    const latitudeRaw = userProfile.locations?.latitude;
+    const longitudeRaw = userProfile.locations?.longitude;
+
+    const latitude = formatCoordinates(latitudeRaw);
+    const longitude = formatCoordinates(longitudeRaw);
 
     Logger.log(`user ${user?.email} searching`, 'ProfileService');
     Logger.log(`search ${search}`, 'ProfileService');
     const skip = (page - 1) * limit;
-    const total = await this.profileRepository.count();
-    const profiles = await this.profileRepository.search(
-      skip,
-      limit,
-      search ?? '',
-      radius,
-      latitude,
-      longitude,
-    );
-
+    const { profiles, total } = await this.profileRepository.search({
+      search: search,
+      skip: skip,
+      take: limit,
+      radius: radius,
+      latitude: latitude,
+      longitude: longitude,
+    });
+    console.log(total);
     return {
       profiles: profiles,
-      page,
-      limit,
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: Math.ceil(total / limit),
       isFirstPage: page === 1,
-      isLastPage: page * limit >= total,
+      isLastpage: page === Math.ceil(total / limit),
     };
   }
 
