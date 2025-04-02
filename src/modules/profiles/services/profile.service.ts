@@ -8,6 +8,8 @@ import { AppException } from '@/errors/appException';
 import { SpecialityRepository } from '../repositories/speciality.repository';
 import { GenreRepository } from '../repositories/genre.repository';
 import * as bcrypt from 'bcryptjs';
+import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
+import formatCoordinates from '@/utils/formatCoordinates';
 
 @Injectable()
 export class ProfileService {
@@ -22,20 +24,15 @@ export class ProfileService {
   async create(profile: CreateProfileBodyDTO): Promise<Profile> {
     Logger.log('Creating profile', 'ProfileService');
 
-    Logger.log('Verifying user email', 'ProfileService');
     await this.findAndVerifyUserEmailExists(profile.email);
 
-    Logger.log('Verifying user handle', 'ProfileService');
     await this.findAndVerifyUserHandleExists(profile.handle);
 
-    Logger.log('Verifying if profile type exists', 'ProfileService');
     await this.verifyIfProfileTypeExists(profile.profileTypeId);
 
-    Logger.log('Verifying if specialities exists', 'ProfileService');
     if (profile.specialities)
       await this.verifyIfSpecialitiesExists(profile.specialities);
 
-    Logger.log('Verifying if genres exists', 'ProfileService');
     if (profile.genres) await this.verifyIfGenresExists(profile.genres);
 
     Logger.log('Hashing password', 'ProfileService');
@@ -230,6 +227,70 @@ export class ProfileService {
   async findAll(): Promise<Profile[]> {
     Logger.log('Finding all profiles', 'ProfileService');
     return await this.profileRepository.findAll();
+  }
+
+  async search({
+    page,
+    limit,
+    userId,
+    radius,
+    search,
+  }: {
+    page: number;
+    limit: number;
+    userId: number;
+    radius?: number;
+    search?: string;
+  }): Promise<SearchResponseBodyDTO> {
+    Logger.log('Searching profiles', 'ProfileService');
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      Logger.error('User not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'user not found',
+        statusCode: 404,
+      });
+    }
+
+    const userProfile = await this.profileRepository.findByUserId(user.id);
+
+    if (!userProfile) {
+      Logger.error('User profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'user profile not found',
+        statusCode: 404,
+      });
+    }
+
+    const latitudeRaw = userProfile.locations?.latitude;
+    const longitudeRaw = userProfile.locations?.longitude;
+
+    const latitude = formatCoordinates(latitudeRaw);
+    const longitude = formatCoordinates(longitudeRaw);
+
+    Logger.log(`user ${user?.email} searching`, 'ProfileService');
+    Logger.log(`search ${search}`, 'ProfileService');
+    const skip = (page - 1) * limit;
+    const { profiles, total } = await this.profileRepository.search({
+      search: search,
+      skip: skip,
+      take: limit,
+      radius: radius,
+      latitude: latitude,
+      longitude: longitude,
+    });
+
+    return {
+      profiles: profiles,
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: Math.ceil(total / limit),
+      isFirstPage: page === 1,
+      isLastpage: page === Math.ceil(total / limit),
+    };
   }
 
   async findById(id: number): Promise<Profile | null> {
