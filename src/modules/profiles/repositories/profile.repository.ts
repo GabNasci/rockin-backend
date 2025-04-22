@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Prisma, Profile } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
@@ -61,6 +61,9 @@ export class ProfileRepository {
     radius,
     latitude,
     longitude,
+    specialities,
+    genres,
+    profileId,
   }: SearchBody) {
     let profileIds: number[] = [];
 
@@ -74,6 +77,12 @@ export class ProfileRepository {
       profileIds = profiles.map((profile) => profile.id);
     }
 
+    if (profileId && profileIds.length > 0) {
+      profileIds = profileIds.filter((id) => id !== profileId);
+    }
+
+    Logger.log('profiles encontrados:', profileIds);
+
     // Contagem total de registros sem aplicar paginação
     const total = await this.prisma.profile.count({
       where: {
@@ -82,8 +91,32 @@ export class ProfileRepository {
           contains: search,
           mode: 'insensitive',
         },
+        ...(specialities && specialities.length > 0
+          ? {
+              specialities: {
+                some: {
+                  id: {
+                    in: specialities,
+                  },
+                },
+              },
+            }
+          : {}),
+        ...(genres && genres.length > 0
+          ? {
+              genres: {
+                some: {
+                  id: {
+                    in: genres,
+                  },
+                },
+              },
+            }
+          : {}),
       },
     });
+
+    const shouldFilterByProfileIds = hasCoordinates && radius;
 
     const profiles = await this.prisma.profile.findMany({
       include: {
@@ -92,11 +125,33 @@ export class ProfileRepository {
         locations: true,
       },
       where: {
-        ...(profileIds.length ? { id: { in: profileIds } } : {}),
+        ...(shouldFilterByProfileIds ? { id: { in: profileIds } } : {}),
         name: {
           contains: search,
           mode: 'insensitive',
         },
+        ...(specialities && specialities.length > 0
+          ? {
+              specialities: {
+                some: {
+                  id: {
+                    in: specialities,
+                  },
+                },
+              },
+            }
+          : {}),
+        ...(genres && genres.length > 0
+          ? {
+              genres: {
+                some: {
+                  id: {
+                    in: genres,
+                  },
+                },
+              },
+            }
+          : {}),
       },
       skip,
       take,

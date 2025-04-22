@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -16,8 +17,15 @@ export class SearchRequestBodyDTO {
   @IsOptional()
   @IsString()
   search?: string;
-
   @IsOptional()
   @IsNumber()
   radius?: number;
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  specialities?: number[];
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  genres?: number[];
 }
