@@ -3,5 +3,6 @@ export class LoginUserResponseDTO {
   user: {
     id: number;
     email: string;
+    profileId: number;
   };
 }

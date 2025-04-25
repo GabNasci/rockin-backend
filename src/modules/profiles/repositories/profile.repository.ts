@@ -166,4 +166,12 @@ export class ProfileRepository {
       },
     });
   }
+
+  async findProfileByUserId(userId: number): Promise<Profile | null> {
+    return await this.prisma.profile.findFirst({
+      where: {
+        user_id: userId,
+      },
+    });
+  }
 }

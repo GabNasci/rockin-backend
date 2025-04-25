@@ -4,7 +4,6 @@ model Band {
   owner      Profile   @relation("owner_band", fields: [owner_id], references: [id])
   profile_id Int       @unique
   profile    Profile   @relation("profile_band", fields: [profile_id], references: [id])
-  genres     Genre[]   @relation("bands_genres")
   members    Profile[] @relation("profiles_bands")
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt

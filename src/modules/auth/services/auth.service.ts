@@ -17,12 +17,14 @@ export class AuthService {
     const token = await this.generateToken({
       id: user.id,
       email: user.email,
+      profileId: user.profileId,
     });
     return {
       token: token,
       user: {
         id: user.id,
         email: user.email,
+        profileId: user.profileId,
       },
     };
   }

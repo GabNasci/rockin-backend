@@ -4,10 +4,14 @@ import { AppException } from 'src/errors/appException';
 import { CreateUserResponseDTO } from '../dtos/createUserResponse.dto';
 import { CreateUserBodyDTO } from '../dtos/createUserBody.dto';
 import * as bcrypt from 'bcryptjs';
+import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly profileRepository: ProfileRepository,
+  ) {}
 
   async create({
     email,
@@ -54,6 +58,23 @@ export class UserService {
       });
     }
 
-    return user;
+    const userProfile = await this.profileRepository.findProfileByUserId(
+      user.id,
+    );
+
+    if (!userProfile) {
+      Logger.log(`User not found: ${user?.id}`);
+      Logger.error('profile not found');
+      throw new AppException({
+        error: 'Unauthorized',
+        message: 'invalid credentials',
+        statusCode: 401,
+      });
+    }
+
+    return {
+      ...user,
+      profileId: userProfile.id,
+    };
   }
 }

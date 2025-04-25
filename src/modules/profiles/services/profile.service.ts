@@ -8,6 +8,7 @@ import { AppException } from '@/errors/appException';
 import { SpecialityRepository } from '../repositories/speciality.repository';
 import { GenreRepository } from '../repositories/genre.repository';
 import * as bcrypt from 'bcryptjs';
+import { BandRepository } from '../repositories/band.repository';
 
 @Injectable()
 export class ProfileService {
@@ -17,6 +18,7 @@ export class ProfileService {
     private readonly userRepository: UserRepository,
     private readonly specialityRepository: SpecialityRepository,
     private readonly genreRepository: GenreRepository,
+    private readonly bandRepository: BandRepository,
   ) {}
 
   async create(profile: CreateProfileBodyDTO): Promise<Profile> {
@@ -134,6 +136,20 @@ export class ProfileService {
     }
   }
 
+  async verifyIfProfileExists(profileId: number) {
+    Logger.log('Verifying if profile exists', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return profile;
+  }
+
   verifyIfUserIsOwner(profile: Profile, userId: number) {
     Logger.log('Verifying if user is owner', 'ProfileService');
     if (profile.user_id !== userId) {
@@ -240,5 +256,35 @@ export class ProfileService {
   async findByHandle(handle: string): Promise<Profile | null> {
     Logger.log('Finding profile by handle', 'ProfileService');
     return await this.profileRepository.findByHandle(handle);
+  }
+
+  async createBandProfile({
+    name,
+    handle,
+    userId,
+    profileId,
+    genres,
+  }: {
+    name: string;
+    handle: string;
+    userId: number;
+    profileId: number;
+    genres?: number[];
+  }) {
+    Logger.log('Creating band profile', 'ProfileService');
+    const profile = await this.verifyIfProfileExists(profileId);
+
+    this.verifyIfUserIsOwner(profile, userId);
+
+    if (genres) await this.verifyIfGenresExists(genres);
+
+    const bandProfile = await this.bandRepository.create({
+      name,
+      handle,
+      userId,
+      profileId,
+      genres,
+    });
+    return bandProfile;
   }
 }

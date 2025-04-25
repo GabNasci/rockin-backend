@@ -14,6 +14,7 @@ import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
+import { AddBandBodyDTO } from '../dtos/create_band_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -50,6 +51,22 @@ export class ProfileController {
       userId: req.user.id,
       profileId: body.profileId,
       genreIds: body.genreIds,
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/bands/add')
+  async addBandToProfile(
+    @Body() body: AddBandBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/bands/add', 'POST');
+    return await this.profileService.createBandProfile({
+      userId: req.user.id,
+      profileId: req.user.profileId,
+      name: body.name,
+      handle: body.handle,
+      genres: body.genres,
     });
   }
 

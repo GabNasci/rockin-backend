@@ -6,10 +6,28 @@ import { PrismaService } from '@infra/database/prisma/prisma.service';
 export class BandRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(band: Prisma.BandCreateInput): Promise<Band> {
+  async create(band: {
+    ownerId: number;
+    profileId: number;
+    genres?: number[];
+    name: string;
+    handle: string;
+  }): Promise<Band> {
     return await this.prisma.band.create({
       data: {
-        ...band,
+        owner: {
+          connect: {
+            id: band.ownerId,
+          },
+        },
+        genres: {
+          connect: band.genres?.map((genreId) => ({ id: genreId })),
+        },
+        profile: {
+          connect: {
+            id: band.profileId,
+          },
+        },
       },
     });
   }
