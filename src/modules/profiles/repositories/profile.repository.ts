@@ -74,7 +74,7 @@ export class ProfileRepository {
       const profiles = await this.prisma.$queryRawTyped(
         searchProfiles(latitude, longitude, radius),
       );
-      profileIds = profiles.map((profile) => profile.id);
+      profileIds = profiles;
     }
 
     if (profileId && profileIds.length > 0) {
