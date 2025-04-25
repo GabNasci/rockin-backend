@@ -235,12 +235,16 @@ export class ProfileService {
     userId,
     radius,
     search,
+    specialities,
+    genres,
   }: {
     page: number;
     limit: number;
     userId: number;
     radius?: number;
     search?: string;
+    specialities?: number[];
+    genres?: number[];
   }): Promise<SearchResponseBodyDTO> {
     Logger.log('Searching profiles', 'ProfileService');
     const user = await this.userRepository.findById(userId);
@@ -280,6 +284,9 @@ export class ProfileService {
       radius: radius,
       latitude: latitude,
       longitude: longitude,
+      specialities: specialities,
+      genres: genres,
+      profileId: userProfile.id,
     });
 
     return {

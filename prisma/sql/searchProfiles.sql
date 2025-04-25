@@ -8,4 +8,3 @@ WHERE (
         sin(radians($1)) * sin(radians(l.latitude::double precision))
     )
 ) <= $3
-

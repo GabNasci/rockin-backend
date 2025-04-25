@@ -73,6 +73,8 @@ export class ProfileController {
       limit: body.limit,
       radius: body.radius,
       search: body.search,
+      specialities: body.specialities,
+      genres: body.genres,
     });
   }
 }
