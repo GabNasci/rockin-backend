@@ -20,9 +20,6 @@ export class BandRepository {
             id: band.ownerId,
           },
         },
-        genres: {
-          connect: band.genres?.map((genreId) => ({ id: genreId })),
-        },
         profile: {
           connect: {
             id: band.profileId,

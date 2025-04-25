@@ -74,7 +74,8 @@ export class ProfileRepository {
       const profiles = await this.prisma.$queryRawTyped(
         searchProfiles(latitude, longitude, radius),
       );
-      profileIds = profiles;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 
     if (profileId && profileIds.length > 0) {

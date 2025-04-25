@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Profile } from '@prisma/client';
+import { Prisma, Profile } from '@prisma/client';
 import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
@@ -67,6 +67,12 @@ export class ProfileService {
       });
     }
   }
+
+  // async createOnlyProfile(
+  //   profile: Prisma.ProfileCreateInput,
+  // ): Promise<Profile> {
+  //   Logger.log('Creating profile', 'ProfileService');
+  // }
 
   async findAndVerifyUserEmailExists(email: string) {
     Logger.log('Finding user by email', 'ProfileService');
@@ -346,13 +352,13 @@ export class ProfileService {
 
     if (genres) await this.verifyIfGenresExists(genres);
 
-    const bandProfile = await this.bandRepository.create({
-      name,
-      handle,
-      userId,
-      profileId,
-      genres,
-    });
-    return bandProfile;
+    // const bandProfile = await this.bandRepository.create({
+    //   name: name,
+    //   handle: handle,
+    //   ownerId: profile.id,
+    //   profileId: ,
+    //   genres: genres,
+    // });
+    // return bandProfile;
   }
 }

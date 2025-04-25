@@ -5,6 +5,7 @@ import { GenreRepository } from '@modules/profiles/repositories/genre.repository
 import { SpecialityRepository } from '@modules/profiles/repositories/speciality.repository';
 import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
 import { ProfileTypeRepository } from '@modules/profiles/repositories/profile_type.repository';
+import { BandRepository } from '@modules/profiles/repositories/band.repository';
 
 @Module({
   providers: [
@@ -14,6 +15,7 @@ import { ProfileTypeRepository } from '@modules/profiles/repositories/profile_ty
     SpecialityRepository,
     ProfileRepository,
     ProfileTypeRepository,
+    BandRepository,
   ],
   exports: [
     PrismaService,
@@ -22,6 +24,7 @@ import { ProfileTypeRepository } from '@modules/profiles/repositories/profile_ty
     SpecialityRepository,
     ProfileRepository,
     ProfileTypeRepository,
+    BandRepository,
   ],
 })
 export class DatabaseModule {}
