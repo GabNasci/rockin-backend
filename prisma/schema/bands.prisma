@@ -1,6 +1,6 @@
 model Band {
   id         Int       @id @default(autoincrement())
-  owner_id   Int       @unique
+  owner_id   Int
   owner      Profile   @relation("owner_band", fields: [owner_id], references: [id])
   profile_id Int       @unique
   profile    Profile   @relation("profile_band", fields: [profile_id], references: [id])

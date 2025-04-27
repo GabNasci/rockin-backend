@@ -44,6 +44,31 @@ export class ProfileRepository {
     });
   }
 
+  async simpleCreate(profile: {
+    name: string;
+    handle: string;
+    userId: number;
+    profileTypeId: number;
+  }) {
+    return this.prisma.profile.create({
+      data: {
+        name: profile.name,
+        handle: profile.handle,
+        user: {
+          connect: { id: profile.userId },
+        },
+        profile_type: {
+          connect: { id: profile.profileTypeId },
+        },
+      },
+      include: {
+        specialities: true,
+        genres: true,
+        locations: true,
+      },
+    });
+  }
+
   async findAll(): Promise<Profile[]> {
     return await this.prisma.profile.findMany({
       include: {
@@ -74,7 +99,6 @@ export class ProfileRepository {
       const profiles = await this.prisma.$queryRawTyped(
         searchProfiles(latitude, longitude, radius),
       );
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 

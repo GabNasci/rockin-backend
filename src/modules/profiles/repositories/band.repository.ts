@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Band, Prisma } from '@prisma/client';
+import { Band } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 
 @Injectable()
@@ -9,9 +9,7 @@ export class BandRepository {
   async create(band: {
     ownerId: number;
     profileId: number;
-    genres?: number[];
-    name: string;
-    handle: string;
+    memberIds: number[];
   }): Promise<Band> {
     return await this.prisma.band.create({
       data: {
@@ -25,6 +23,16 @@ export class BandRepository {
             id: band.profileId,
           },
         },
+        members: {
+          connect: band.memberIds.map((memberId) => ({
+            id: memberId,
+          })),
+        },
+      },
+      include: {
+        owner: true,
+        profile: true,
+        members: true,
       },
     });
   }

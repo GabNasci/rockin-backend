@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma, Profile } from '@prisma/client';
+import { Profile } from '@prisma/client';
 import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
@@ -11,6 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { BandRepository } from '../repositories/band.repository';
 import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
 import formatCoordinates from '@/utils/formatCoordinates';
+import { ProfileTypeIdEnum } from '@/constants/enums';
 
 @Injectable()
 export class ProfileService {
@@ -28,7 +29,7 @@ export class ProfileService {
 
     await this.findAndVerifyUserEmailExists(profile.email);
 
-    await this.findAndVerifyUserHandleExists(profile.handle);
+    await this.findAndVerifyProfileHandleExists(profile.handle);
 
     await this.verifyIfProfileTypeExists(profile.profileTypeId);
 
@@ -68,11 +69,25 @@ export class ProfileService {
     }
   }
 
-  // async createOnlyProfile(
-  //   profile: Prisma.ProfileCreateInput,
-  // ): Promise<Profile> {
-  //   Logger.log('Creating profile', 'ProfileService');
-  // }
+  async createOnlyProfile(profile: {
+    name: string;
+    handle: string;
+    userId: number;
+    profileTypeId: number;
+  }): Promise<Profile> {
+    Logger.log('Creating profile', 'ProfileService');
+    try {
+      const newProfile = await this.profileRepository.simpleCreate(profile);
+      Logger.log(`Profile created with id: ${newProfile.id}`, 'ProfileService');
+      return newProfile;
+    } catch (error) {
+      Logger.error('Error creating profile', 'ProfileService', error);
+      throw new AppException({
+        message: 'profile creation failed',
+        statusCode: 500,
+      });
+    }
+  }
 
   async findAndVerifyUserEmailExists(email: string) {
     Logger.log('Finding user by email', 'ProfileService');
@@ -86,13 +101,13 @@ export class ProfileService {
     }
   }
 
-  async findAndVerifyUserHandleExists(handle: string) {
-    Logger.log('Finding user by handle', 'ProfileService');
+  async findAndVerifyProfileHandleExists(handle: string) {
+    Logger.log('Finding profile by handle', 'ProfileService');
     const user = await this.profileRepository.findByHandle(handle);
     if (user) {
-      Logger.error('User already exists', 'ProfileService');
+      Logger.error('Profile with this handle already exists', 'ProfileService');
       throw new AppException({
-        message: 'user already exists',
+        message: 'handle already in use',
         statusCode: 400,
       });
     }
@@ -348,17 +363,44 @@ export class ProfileService {
     Logger.log('Creating band profile', 'ProfileService');
     const profile = await this.verifyIfProfileExists(profileId);
 
+    Logger.log('Verifying if user exists', 'ProfileService');
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      Logger.error('User not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'user not found',
+        statusCode: 404,
+      });
+    }
     this.verifyIfUserIsOwner(profile, userId);
+
+    await this.findAndVerifyProfileHandleExists(handle);
+
+    Logger.log('Creating band profile', 'ProfileService');
+    const bandProfile = await this.createOnlyProfile({
+      name: name,
+      handle: handle,
+      userId: userId,
+      profileTypeId: ProfileTypeIdEnum.BAND,
+    });
+
+    if (!bandProfile) {
+      Logger.error('Band profile not created', 'ProfileService');
+      throw new AppException({
+        error: 'Bad request',
+        message: 'band profile created',
+        statusCode: 400,
+      });
+    }
 
     if (genres) await this.verifyIfGenresExists(genres);
 
-    // const bandProfile = await this.bandRepository.create({
-    //   name: name,
-    //   handle: handle,
-    //   ownerId: profile.id,
-    //   profileId: ,
-    //   genres: genres,
-    // });
-    // return bandProfile;
+    const band = await this.bandRepository.create({
+      ownerId: profile.id,
+      profileId: bandProfile.id,
+      memberIds: [profile.id],
+    });
+    return band;
   }
 }
