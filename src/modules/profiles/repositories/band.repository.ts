@@ -38,6 +38,62 @@ export class BandRepository {
   }
 
   async findAll(): Promise<Band[]> {
-    return await this.prisma.band.findMany();
+    return await this.prisma.band.findMany({
+      include: {
+        owner: true,
+        profile: true,
+        members: true,
+      },
+    });
+  }
+
+  async findById(id: number): Promise<Band | null> {
+    return await this.prisma.band.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        owner: true,
+        profile: true,
+        members: true,
+      },
+    });
+  }
+
+  async findManyByProfileId(profileId: number): Promise<Band[]> {
+    return await this.prisma.band.findMany({
+      where: {
+        members: {
+          some: {
+            id: profileId,
+          },
+        },
+      },
+      include: {
+        owner: true,
+        profile: true,
+        members: true,
+      },
+    });
+  }
+
+  async addMembers(bandId: number, memberIds: number[]): Promise<Band> {
+    return await this.prisma.band.update({
+      where: {
+        id: bandId,
+      },
+      data: {
+        members: {
+          connect: memberIds.map((memberId) => ({
+            id: memberId,
+          })),
+        },
+      },
+      include: {
+        owner: true,
+        profile: true,
+        members: true,
+      },
+    });
   }
 }

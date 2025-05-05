@@ -11,7 +11,6 @@ import * as bcrypt from 'bcryptjs';
 import { BandRepository } from '../repositories/band.repository';
 import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
 import formatCoordinates from '@/utils/formatCoordinates';
-import { ProfileTypeIdEnum } from '@/constants/enums';
 
 @Injectable()
 export class ProfileService {
@@ -87,6 +86,19 @@ export class ProfileService {
         statusCode: 500,
       });
     }
+  }
+
+  async findProfilesByUserId(userId: number): Promise<Profile[]> {
+    Logger.log('Finding profiles by user id', 'ProfileService');
+    const profiles = await this.profileRepository.findManyByUserId(userId);
+    if (!profiles) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return profiles;
   }
 
   async findAndVerifyUserEmailExists(email: string) {
@@ -168,8 +180,17 @@ export class ProfileService {
     return profile;
   }
 
-  verifyIfUserIsOwner(profile: Profile, userId: number) {
+  async verifyIfUserIsOwner(profileId: number, userId: number) {
     Logger.log('Verifying if user is owner', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
     if (profile.user_id !== userId) {
       Logger.error('User is not owner', 'ProfileService');
       throw new AppException({
@@ -199,7 +220,7 @@ export class ProfileService {
       });
     }
 
-    this.verifyIfUserIsOwner(profile, userId);
+    await this.verifyIfUserIsOwner(profile.id, userId);
 
     const specialitiesFounded =
       await this.specialityRepository.findMany(specialityIds);
@@ -242,7 +263,7 @@ export class ProfileService {
       });
     }
 
-    this.verifyIfUserIsOwner(profile, userId);
+    await this.verifyIfUserIsOwner(profile.id, userId);
 
     const genresFounded = await this.genreRepository.findMany(genreIds);
     if (genresFounded.length !== genreIds.length) {
@@ -342,65 +363,22 @@ export class ProfileService {
     return await this.profileRepository.findById(id);
   }
 
-  async findByHandle(handle: string): Promise<Profile | null> {
+  async findByHandle(
+    handle: string,
+    profileId: number,
+    userId: number,
+  ): Promise<Profile | null> {
     Logger.log('Finding profile by handle', 'ProfileService');
-    return await this.profileRepository.findByHandle(handle);
-  }
-
-  async createBandProfile({
-    name,
-    handle,
-    userId,
-    profileId,
-    genres,
-  }: {
-    name: string;
-    handle: string;
-    userId: number;
-    profileId: number;
-    genres?: number[];
-  }) {
-    Logger.log('Creating band profile', 'ProfileService');
-    const profile = await this.verifyIfProfileExists(profileId);
-
-    Logger.log('Verifying if user exists', 'ProfileService');
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      Logger.error('User not found', 'ProfileService');
+    const profile = await this.profileRepository.findByHandle(handle);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
       throw new AppException({
         error: 'Not found',
-        message: 'user not found',
+        message: 'profile not found',
         statusCode: 404,
       });
     }
-    this.verifyIfUserIsOwner(profile, userId);
-
-    await this.findAndVerifyProfileHandleExists(handle);
-
-    Logger.log('Creating band profile', 'ProfileService');
-    const bandProfile = await this.createOnlyProfile({
-      name: name,
-      handle: handle,
-      userId: userId,
-      profileTypeId: ProfileTypeIdEnum.BAND,
-    });
-
-    if (!bandProfile) {
-      Logger.error('Band profile not created', 'ProfileService');
-      throw new AppException({
-        error: 'Bad request',
-        message: 'band profile created',
-        statusCode: 400,
-      });
-    }
-
-    if (genres) await this.verifyIfGenresExists(genres);
-
-    const band = await this.bandRepository.create({
-      ownerId: profile.id,
-      profileId: bandProfile.id,
-      memberIds: [profile.id],
-    });
-    return band;
+    await this.verifyIfUserIsOwner(profile.id, userId);
+    return await this.profileRepository.findByHandle(handle);
   }
 }

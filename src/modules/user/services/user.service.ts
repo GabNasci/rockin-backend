@@ -5,12 +5,15 @@ import { CreateUserResponseDTO } from '../dtos/createUserResponse.dto';
 import { CreateUserBodyDTO } from '../dtos/createUserBody.dto';
 import * as bcrypt from 'bcryptjs';
 import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
+import { Profile } from '@prisma/client';
+import { ProfileService } from '@modules/profiles/services/profile.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly profileRepository: ProfileRepository,
+    private readonly profileService: ProfileService,
   ) {}
 
   async create({
@@ -34,7 +37,7 @@ export class UserService {
     return new CreateUserResponseDTO(userCreated);
   }
 
-  async validateUser(email: string, password: string) {
+  async validateUser(email: string, password: string, profileId?: number) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       Logger.log(`User not found: ${email}`);
@@ -58,11 +61,16 @@ export class UserService {
       });
     }
 
-    const userProfile = await this.profileRepository.findProfileByUserId(
-      user.id,
-    );
+    let profile: Profile | null;
 
-    if (!userProfile) {
+    if (profileId) {
+      await this.profileService.verifyIfUserIsOwner(profileId, user.id);
+      profile = await this.profileRepository.findById(profileId);
+    } else {
+      profile = await this.profileRepository.findByUserId(user.id);
+    }
+
+    if (!profile) {
       Logger.log(`User not found: ${user?.id}`);
       Logger.error('profile not found');
       throw new AppException({
@@ -74,7 +82,7 @@ export class UserService {
 
     return {
       ...user,
-      profileId: userProfile.id,
+      profileId: profile.id,
     };
   }
 }

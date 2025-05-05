@@ -16,16 +16,10 @@ export class AuthService {
     const user = await this.validateUser(email, password);
     const token = await this.generateToken({
       id: user.id,
-      email: user.email,
       profileId: user.profileId,
     });
     return {
       token: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        profileId: user.profileId,
-      },
     };
   }
 
@@ -34,7 +28,10 @@ export class AuthService {
     return user;
   }
 
-  async generateToken(payload: PayloadDTO) {
-    return this.jwtService.signAsync(payload);
+  async generateToken(payload: PayloadDTO, expiresIn?: string | number) {
+    return this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: expiresIn ?? '7d',
+    });
   }
 }

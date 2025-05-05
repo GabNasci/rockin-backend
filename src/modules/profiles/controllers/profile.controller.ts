@@ -14,7 +14,6 @@ import { AuthGuard } from '@modules/auth/guards/auth.guard';
 import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
-import { AddBandBodyDTO } from '../dtos/create_band_body.dto';
 import { SearchRequestBodyDTO } from '../dtos/search_request_body.dto';
 
 @Controller('profiles')
@@ -25,6 +24,20 @@ export class ProfileController {
   async createProfile(@Body() body: CreateProfileBodyDTO) {
     Logger.log('/profiles', 'POST');
     return await this.profileService.create(body);
+  }
+
+  // @UseGuards(AuthGuard)
+  // @Get('/me')
+  // async getMyProfile(@Request() req: RequestUserPayloadDTO) {
+  //   Logger.log('/profiles/me', 'GET');
+  //   return await this.profileService.findMyProfile(req.user.id);
+  // }
+
+  @UseGuards(AuthGuard)
+  @Get('/user')
+  async getProfilesByUser(@Request() req: RequestUserPayloadDTO) {
+    Logger.log('/profiles/user/:userid', 'GET');
+    return await this.profileService.findProfilesByUserId(req.user.id);
   }
 
   @UseGuards(AuthGuard)
@@ -52,22 +65,6 @@ export class ProfileController {
       userId: req.user.id,
       profileId: body.profileId,
       genreIds: body.genreIds,
-    });
-  }
-
-  @UseGuards(AuthGuard)
-  @Post('/bands/add')
-  async addBandToProfile(
-    @Body() body: AddBandBodyDTO,
-    @Request() req: RequestUserPayloadDTO,
-  ) {
-    Logger.log('/profiles/bands/add', 'POST');
-    return await this.profileService.createBandProfile({
-      userId: req.user.id,
-      profileId: req.user.profileId,
-      name: body.name,
-      handle: body.handle,
-      genres: body.genres,
     });
   }
 

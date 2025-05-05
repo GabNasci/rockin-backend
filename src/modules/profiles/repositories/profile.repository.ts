@@ -325,4 +325,12 @@ export class ProfileRepository {
       },
     });
   }
+
+  async findManyByUserId(userId: number): Promise<Profile[]> {
+    return await this.prisma.profile.findMany({
+      where: {
+        user_id: userId,
+      },
+    });
+  }
 }
