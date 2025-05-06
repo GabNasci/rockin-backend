@@ -11,6 +11,8 @@ import * as bcrypt from 'bcryptjs';
 import { BandRepository } from '../repositories/band.repository';
 import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
 import formatCoordinates from '@/utils/formatCoordinates';
+import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
+import { AuthService } from '@modules/auth/services/auth.service';
 
 @Injectable()
 export class ProfileService {
@@ -21,6 +23,7 @@ export class ProfileService {
     private readonly specialityRepository: SpecialityRepository,
     private readonly genreRepository: GenreRepository,
     private readonly bandRepository: BandRepository,
+    private readonly authService: AuthService,
   ) {}
 
   async create(profile: CreateProfileBodyDTO): Promise<Profile> {
@@ -86,6 +89,67 @@ export class ProfileService {
         statusCode: 500,
       });
     }
+  }
+
+  async changeProfile(
+    payload: RequestUserPayloadDTO,
+    newProfileId: number,
+  ): Promise<{ token: string }> {
+    // Verifica se o novo profile pertence ao usuário
+    const profile = await this.profileRepository.findById(newProfileId);
+    if (!profile) {
+      throw new AppException({
+        statusCode: 404,
+        error: 'Not found',
+        message: 'profile not found',
+      });
+    }
+
+    await this.verifyIfUserIsOwner(newProfileId, payload.user.id);
+
+    // Calcula tempo restante do token atual
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const tokenExp = payload.user.exp;
+    const expiresIn = tokenExp ? tokenExp - currentTimestamp : undefined;
+
+    if (expiresIn !== undefined && expiresIn <= 0) {
+      throw new AppException({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message: 'Token expirado',
+      });
+    }
+
+    // Gera novo token com mesmo tempo restante (ou com padrão do serviço se expiresIn for undefined)
+    const token = await this.authService.generateToken(
+      {
+        id: payload.user.id,
+        profileId: newProfileId,
+      },
+      expiresIn,
+    );
+
+    return { token };
+  }
+
+  async findByUserIdAndProfileId(
+    userId: number,
+    profileId: number,
+  ): Promise<Profile> {
+    Logger.log('Finding profile by user id and profile id', 'ProfileService');
+    const profile = await this.profileRepository.findByUserIdAndProfileId(
+      userId,
+      profileId,
+    );
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return profile;
   }
 
   async findProfilesByUserId(userId: number): Promise<Profile[]> {

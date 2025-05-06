@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   Logger,
+  Param,
+  Patch,
   Post,
   Put,
   Request,
@@ -26,17 +28,31 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
-  // @UseGuards(AuthGuard)
-  // @Get('/me')
-  // async getMyProfile(@Request() req: RequestUserPayloadDTO) {
-  //   Logger.log('/profiles/me', 'GET');
-  //   return await this.profileService.findMyProfile(req.user.id);
-  // }
+  @UseGuards(AuthGuard)
+  @Get('/me')
+  async getMyProfile(@Request() req: RequestUserPayloadDTO) {
+    Logger.log('/profiles/me', 'GET');
+    return await this.profileService.findByUserIdAndProfileId(
+      req.user.id,
+      req.user.profileId,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/change-profile/:newProfileId')
+  async changeProfile(
+    @Param('newProfileId') newProfileId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/change-profile', 'PATCH');
+    return await this.profileService.changeProfile(req, newProfileId);
+  }
 
   @UseGuards(AuthGuard)
   @Get('/user')
   async getProfilesByUser(@Request() req: RequestUserPayloadDTO) {
-    Logger.log('/profiles/user/:userid', 'GET');
+    Logger.log('/profiles/user', 'GET');
+    Logger.log(req.user.exp);
     return await this.profileService.findProfilesByUserId(req.user.id);
   }
 

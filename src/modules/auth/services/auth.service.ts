@@ -1,5 +1,5 @@
 import { UserService } from '@modules/user/services/user.service';
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { LoginUserResponseDTO } from '../dtos/login_user_response.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PayloadDTO } from '../dtos/payload.dto';
@@ -7,6 +7,7 @@ import { PayloadDTO } from '../dtos/payload.dto';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private jwtService: JwtService,
   ) {}
@@ -31,7 +32,7 @@ export class AuthService {
   async generateToken(payload: PayloadDTO, expiresIn?: string | number) {
     return this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: expiresIn ?? '7d',
+      expiresIn: expiresIn ?? process.env.JWT_EXPIRATION,
     });
   }
 }
