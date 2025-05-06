@@ -8,7 +8,9 @@ import {
   Post,
   Put,
   Request,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
@@ -17,6 +19,10 @@ import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
 import { SearchRequestBodyDTO } from '../dtos/search_request_body.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AppException } from '@/errors/appException';
+import { extname } from 'path';
+import { diskStorage } from 'multer';
 
 @Controller('profiles')
 export class ProfileController {
@@ -106,5 +112,46 @@ export class ProfileController {
       specialities: body.specialities,
       genres: body.genres,
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/avatar/add')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+          cb(null, true);
+        } else {
+          cb(
+            new AppException({
+              error: 'Bad Request',
+              message: 'Only image files are allowed',
+              statusCode: 400,
+            }),
+            false,
+          );
+        }
+      },
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (
+          req: Express.Request,
+          file: { originalname: string; fieldname: string },
+          cb: (error: Error | null, filename: string) => void,
+        ) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  async addAvatarToProfile(
+    @UploadedFile() file: { filename: string },
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/avatar/add', 'POST');
+    await this.profileService.addAvatarToProfile(file, req.user.profileId);
   }
 }

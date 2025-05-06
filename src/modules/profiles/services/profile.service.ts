@@ -445,4 +445,22 @@ export class ProfileService {
     await this.verifyIfUserIsOwner(profile.id, userId);
     return await this.profileRepository.findByHandle(handle);
   }
+
+  async addAvatarToProfile(file: { filename: string }, profileId: number) {
+    Logger.log('Adding avatar to profile', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const avatar = await this.profileRepository.addAvatar(
+      profileId,
+      file.filename,
+    );
+    return avatar;
+  }
 }

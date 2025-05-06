@@ -9,6 +9,8 @@ import { ProfileService } from './services/profile.service';
 import { ProfileTypeService } from './services/profile_type.service';
 import { ProfileRepository } from './repositories/profile.repository';
 import { AuthModule } from '@modules/auth/auth.module';
+import { FileService } from './services/file.service';
+import { ImageRepository } from './repositories/image.repository';
 
 @Module({
   imports: [DatabaseModule, forwardRef(() => AuthModule)],
@@ -19,6 +21,8 @@ import { AuthModule } from '@modules/auth/auth.module';
     ProfileService,
     ProfileTypeService,
     ProfileRepository,
+    FileService,
+    ImageRepository,
   ],
   exports: [
     GenreService,
@@ -26,6 +30,8 @@ import { AuthModule } from '@modules/auth/auth.module';
     ProfileService,
     ProfileTypeService,
     ProfileRepository,
+    FileService,
+    ImageRepository,
   ],
 })
 export class ProfileModule {}
