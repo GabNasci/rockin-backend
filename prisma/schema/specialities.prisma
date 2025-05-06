@@ -1,9 +1,11 @@
 model Speciality {
-  id         Int       @id @default(autoincrement())
-  name       String
-  profiles   Profile[] @relation("profiles_specialities")
-  created_at DateTime  @default(now())
-  updated_at DateTime? @updatedAt
+  id              Int         @id @default(autoincrement())
+  name            String
+  profile_type_id Int
+  profile_type    ProfileType @relation(fields: [profile_type_id], references: [id])
+  profiles        Profile[]   @relation("profiles_specialities")
+  created_at      DateTime    @default(now())
+  updated_at      DateTime?   @updatedAt
 
   @@map("specialities")
 }

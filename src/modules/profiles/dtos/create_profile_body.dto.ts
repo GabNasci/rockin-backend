@@ -12,10 +12,7 @@ import {
 } from 'class-validator';
 import { CreateLocationBodyDTO } from './create_location_body.dto';
 import { Type } from 'class-transformer';
-
-export const NAME_REGEX = /^[a-zA-ZÀ-ÖØ-öø-ÿ\s]+$/;
-
-export const HANDLER_REGEX = /^@[a-zA-Z0-9._]+$/;
+import { HANDLE_REGEX, NAME_REGEX } from '@/constants/regex';
 
 export class CreateProfileBodyDTO {
   @IsString()
@@ -41,9 +38,9 @@ export class CreateProfileBodyDTO {
   @IsNotEmpty()
   name: string;
 
-  @Matches(HANDLER_REGEX, {
+  @Matches(HANDLE_REGEX, {
     message:
-      'Handler must start with @ and contain only letters, numbers, underscores, and periods',
+      'Handler must contain only letters, numbers, underscores, and periods',
   })
   @IsNotEmpty()
   handle: string;

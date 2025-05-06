@@ -1,9 +1,10 @@
 model ProfileType {
-  id         Int       @id @default(autoincrement())
+  id         Int          @id @default(autoincrement())
   name       String
   profiles   Profile[]
-  created_at DateTime  @default(now())
-  updated_at DateTime? @updatedAt
+  Speciality Speciality[]
+  created_at DateTime     @default(now())
+  updated_at DateTime?    @updatedAt
 
   @@map("profile_types")
 }

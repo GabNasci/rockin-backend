@@ -8,8 +8,11 @@ import { AppException } from '@/errors/appException';
 import { SpecialityRepository } from '../repositories/speciality.repository';
 import { GenreRepository } from '../repositories/genre.repository';
 import * as bcrypt from 'bcryptjs';
+import { BandRepository } from '../repositories/band.repository';
 import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
 import formatCoordinates from '@/utils/formatCoordinates';
+import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
+import { AuthService } from '@modules/auth/services/auth.service';
 
 @Injectable()
 export class ProfileService {
@@ -19,6 +22,8 @@ export class ProfileService {
     private readonly userRepository: UserRepository,
     private readonly specialityRepository: SpecialityRepository,
     private readonly genreRepository: GenreRepository,
+    private readonly bandRepository: BandRepository,
+    private readonly authService: AuthService,
   ) {}
 
   async create(profile: CreateProfileBodyDTO): Promise<Profile> {
@@ -26,7 +31,7 @@ export class ProfileService {
 
     await this.findAndVerifyUserEmailExists(profile.email);
 
-    await this.findAndVerifyUserHandleExists(profile.handle);
+    await this.findAndVerifyProfileHandleExists(profile.handle);
 
     await this.verifyIfProfileTypeExists(profile.profileTypeId);
 
@@ -66,6 +71,100 @@ export class ProfileService {
     }
   }
 
+  async createOnlyProfile(profile: {
+    name: string;
+    handle: string;
+    userId: number;
+    profileTypeId: number;
+  }): Promise<Profile> {
+    Logger.log('Creating profile', 'ProfileService');
+    try {
+      const newProfile = await this.profileRepository.simpleCreate(profile);
+      Logger.log(`Profile created with id: ${newProfile.id}`, 'ProfileService');
+      return newProfile;
+    } catch (error) {
+      Logger.error('Error creating profile', 'ProfileService', error);
+      throw new AppException({
+        message: 'profile creation failed',
+        statusCode: 500,
+      });
+    }
+  }
+
+  async changeProfile(
+    payload: RequestUserPayloadDTO,
+    newProfileId: number,
+  ): Promise<{ token: string }> {
+    // Verifica se o novo profile pertence ao usuário
+    const profile = await this.profileRepository.findById(newProfileId);
+    if (!profile) {
+      throw new AppException({
+        statusCode: 404,
+        error: 'Not found',
+        message: 'profile not found',
+      });
+    }
+
+    await this.verifyIfUserIsOwner(newProfileId, payload.user.id);
+
+    // Calcula tempo restante do token atual
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const tokenExp = payload.user.exp;
+    const expiresIn = tokenExp ? tokenExp - currentTimestamp : undefined;
+
+    if (expiresIn !== undefined && expiresIn <= 0) {
+      throw new AppException({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message: 'Token expirado',
+      });
+    }
+
+    // Gera novo token com mesmo tempo restante (ou com padrão do serviço se expiresIn for undefined)
+    const token = await this.authService.generateToken(
+      {
+        id: payload.user.id,
+        profileId: newProfileId,
+      },
+      expiresIn,
+    );
+
+    return { token };
+  }
+
+  async findByUserIdAndProfileId(
+    userId: number,
+    profileId: number,
+  ): Promise<Profile> {
+    Logger.log('Finding profile by user id and profile id', 'ProfileService');
+    const profile = await this.profileRepository.findByUserIdAndProfileId(
+      userId,
+      profileId,
+    );
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return profile;
+  }
+
+  async findProfilesByUserId(userId: number): Promise<Profile[]> {
+    Logger.log('Finding profiles by user id', 'ProfileService');
+    const profiles = await this.profileRepository.findManyByUserId(userId);
+    if (!profiles) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return profiles;
+  }
+
   async findAndVerifyUserEmailExists(email: string) {
     Logger.log('Finding user by email', 'ProfileService');
     const user = await this.userRepository.findByEmail(email);
@@ -78,13 +177,13 @@ export class ProfileService {
     }
   }
 
-  async findAndVerifyUserHandleExists(handle: string) {
-    Logger.log('Finding user by handle', 'ProfileService');
+  async findAndVerifyProfileHandleExists(handle: string) {
+    Logger.log('Finding profile by handle', 'ProfileService');
     const user = await this.profileRepository.findByHandle(handle);
     if (user) {
-      Logger.error('User already exists', 'ProfileService');
+      Logger.error('Profile with this handle already exists', 'ProfileService');
       throw new AppException({
-        message: 'user already exists',
+        message: 'handle already in use',
         statusCode: 400,
       });
     }
@@ -131,8 +230,31 @@ export class ProfileService {
     }
   }
 
-  verifyIfUserIsOwner(profile: Profile, userId: number) {
+  async verifyIfProfileExists(profileId: number) {
+    Logger.log('Verifying if profile exists', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return profile;
+  }
+
+  async verifyIfUserIsOwner(profileId: number, userId: number) {
     Logger.log('Verifying if user is owner', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
     if (profile.user_id !== userId) {
       Logger.error('User is not owner', 'ProfileService');
       throw new AppException({
@@ -162,7 +284,7 @@ export class ProfileService {
       });
     }
 
-    this.verifyIfUserIsOwner(profile, userId);
+    await this.verifyIfUserIsOwner(profile.id, userId);
 
     const specialitiesFounded =
       await this.specialityRepository.findMany(specialityIds);
@@ -205,7 +327,7 @@ export class ProfileService {
       });
     }
 
-    this.verifyIfUserIsOwner(profile, userId);
+    await this.verifyIfUserIsOwner(profile.id, userId);
 
     const genresFounded = await this.genreRepository.findMany(genreIds);
     if (genresFounded.length !== genreIds.length) {
@@ -305,8 +427,22 @@ export class ProfileService {
     return await this.profileRepository.findById(id);
   }
 
-  async findByHandle(handle: string): Promise<Profile | null> {
+  async findByHandle(
+    handle: string,
+    profileId: number,
+    userId: number,
+  ): Promise<Profile | null> {
     Logger.log('Finding profile by handle', 'ProfileService');
+    const profile = await this.profileRepository.findByHandle(handle);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    await this.verifyIfUserIsOwner(profile.id, userId);
     return await this.profileRepository.findByHandle(handle);
   }
 }
