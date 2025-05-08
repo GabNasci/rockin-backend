@@ -344,4 +344,15 @@ export class ProfileRepository {
       },
     });
   }
+
+  async removeAvatar(id: number): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data: {
+        avatar: null,
+      },
+    });
+  }
 }

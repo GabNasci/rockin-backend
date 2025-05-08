@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Logger,
   Param,
   Patch,
@@ -115,7 +117,8 @@ export class ProfileController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('/avatar/add')
+  @Put('/avatar/add')
+  @HttpCode(200)
   @UseInterceptors(
     FileInterceptor('avatar', {
       fileFilter: (req, file, cb) => {
@@ -153,5 +156,16 @@ export class ProfileController {
   ) {
     Logger.log('/profiles/avatar/add', 'POST');
     await this.profileService.addAvatarToProfile(file, req.user.profileId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/avatar/remove')
+  @HttpCode(200)
+  async removeAvatarFromProfile(
+    @Request() req: RequestUserPayloadDTO,
+  ): Promise<void> {
+    Logger.log('/profiles/avatar/remove', 'DELETE');
+
+    await this.profileService.removeAvatarFromProfile(req.user.profileId);
   }
 }

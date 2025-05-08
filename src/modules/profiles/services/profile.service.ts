@@ -13,6 +13,8 @@ import { SearchResponseBodyDTO } from '../dtos/search_response_body.dto';
 import formatCoordinates from '@/utils/formatCoordinates';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AuthService } from '@modules/auth/services/auth.service';
+import { join } from 'path';
+import { unlink } from 'fs/promises';
 
 @Injectable()
 export class ProfileService {
@@ -462,5 +464,37 @@ export class ProfileService {
       file.filename,
     );
     return avatar;
+  }
+
+  async removeAvatarFromProfile(profileId: number) {
+    Logger.log('Removing avatar from profile', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+
+    if (profile.avatar) {
+      const filePath = join(process.cwd(), 'uploads', profile.avatar);
+
+      try {
+        await unlink(filePath);
+      } catch (err) {
+        Logger.warn(
+          `Erro ao remover arquivo de avatar: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        throw new AppException({
+          error: 'Internal Server Error',
+          message: 'Erro ao remover arquivo de avatar',
+          statusCode: 500,
+        });
+      }
+    }
+
+    await this.profileRepository.removeAvatar(profileId);
   }
 }
