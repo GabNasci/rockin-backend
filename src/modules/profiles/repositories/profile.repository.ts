@@ -333,4 +333,26 @@ export class ProfileRepository {
       },
     });
   }
+
+  async addAvatar(id: number, avatar: string): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data: {
+        avatar,
+      },
+    });
+  }
+
+  async removeAvatar(id: number): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data: {
+        avatar: null,
+      },
+    });
+  }
 }
