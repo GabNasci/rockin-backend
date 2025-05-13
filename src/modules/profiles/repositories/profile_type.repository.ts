@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProfileType } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
+import { ProfileTypeIdEnum } from '@/constants/enums';
 
 @Injectable()
 export class ProfileTypeRepository {
@@ -15,7 +16,13 @@ export class ProfileTypeRepository {
   }
 
   async findAll(): Promise<ProfileType[]> {
-    return await this.prisma.profileType.findMany();
+    return await this.prisma.profileType.findMany({
+      where: {
+        id: {
+          not: ProfileTypeIdEnum.BAND,
+        },
+      },
+    });
   }
 
   async findById(id: number): Promise<ProfileType | null> {

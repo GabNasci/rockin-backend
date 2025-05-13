@@ -25,10 +25,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AppException } from '@/errors/appException';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import { ProfileTypeRepository } from '../repositories/profile_type.repository';
 
 @Controller('profiles')
 export class ProfileController {
-  constructor(private profileService: ProfileService) {}
+  constructor(
+    private profileService: ProfileService,
+    private profileTypeRepository: ProfileTypeRepository,
+  ) {}
 
   @Post()
   async createProfile(@Body() body: CreateProfileBodyDTO) {
@@ -167,5 +171,11 @@ export class ProfileController {
     Logger.log('/profiles/avatar/remove', 'DELETE');
 
     await this.profileService.removeAvatarFromProfile(req.user.profileId);
+  }
+
+  @Get('/profile-types')
+  async getProfileTypes() {
+    Logger.log('/profiles/profile-types', 'GET');
+    return await this.profileTypeRepository.findAll();
   }
 }
