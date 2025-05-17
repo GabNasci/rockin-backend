@@ -151,6 +151,7 @@ export class ProfileService {
         statusCode: 404,
       });
     }
+    await this.verifyIfUserIsOwner(profileId, userId);
     return profile;
   }
 
@@ -429,6 +430,20 @@ export class ProfileService {
     return await this.profileRepository.findById(id);
   }
 
+  async findProfileByHandle(handle: string): Promise<Profile | null> {
+    Logger.log('Finding profile by handle', 'ProfileService');
+    const profile = await this.profileRepository.findByHandle(handle);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    return await this.profileRepository.findByHandle(handle);
+  }
+
   async findByHandle(
     handle: string,
     profileId: number,
@@ -496,5 +511,148 @@ export class ProfileService {
     }
 
     await this.profileRepository.removeAvatar(profileId);
+  }
+
+  async followProfile(followerId: number, followingId: number) {
+    Logger.log('Following profile', 'ProfileService');
+    const followerProfile = await this.profileRepository.findById(followerId);
+    if (!followerProfile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const followingProfile = await this.profileRepository.findById(followingId);
+    if (!followingProfile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    if (followerId === followingId) {
+      Logger.error('You cannot follow yourself', 'ProfileService');
+      throw new AppException({
+        error: 'Bad Request',
+        message: 'You cannot follow yourself',
+        statusCode: 400,
+      });
+    }
+    const isFollowing = await this.profileRepository.isFollowing(
+      followerId,
+      followingId,
+    );
+    if (isFollowing) {
+      Logger.error('You are already following this profile', 'ProfileService');
+      throw new AppException({
+        error: 'Bad Request',
+        message: 'You are already following this profile',
+        statusCode: 400,
+      });
+    }
+    await this.profileRepository.followProfile(followerId, followingId);
+  }
+
+  async unfollowProfile(followerId: number, followingId: number) {
+    Logger.log('Unfollowing profile', 'ProfileService');
+    const followerProfile = await this.profileRepository.findById(followerId);
+    if (!followerProfile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const followingProfile = await this.profileRepository.findById(followingId);
+    if (!followingProfile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    if (followerId === followingId) {
+      Logger.error('You cannot unfollow yourself', 'ProfileService');
+      throw new AppException({
+        error: 'Bad Request',
+        message: 'You cannot unfollow yourself',
+        statusCode: 400,
+      });
+    }
+    const isFollowing = await this.profileRepository.isFollowing(
+      followerId,
+      followingId,
+    );
+    if (!isFollowing) {
+      Logger.error('You are not following this profile', 'ProfileService');
+      throw new AppException({
+        error: 'Bad Request',
+        message: 'You are not following this profile',
+        statusCode: 400,
+      });
+    }
+    await this.profileRepository.unfollowProfile(followerId, followingId);
+  }
+
+  async getFollowers(profileId: number) {
+    Logger.log('Getting followers', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const followers = await this.profileRepository.findFollowers(profileId);
+    return followers;
+  }
+
+  async getFollowing(profileId: number) {
+    Logger.log('Getting following', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const following = await this.profileRepository.findFollowings(profileId);
+    return following;
+  }
+
+  async isFolllowing(followerId: number, followingId: number) {
+    Logger.log('Checking if following', 'ProfileService');
+    const followerProfile = await this.profileRepository.findById(followerId);
+    if (!followerProfile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const followingProfile = await this.profileRepository.findById(followingId);
+    if (!followingProfile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const following = await this.profileRepository.isFollowing(
+      followerId,
+      followingId,
+    );
+    return following;
   }
 }

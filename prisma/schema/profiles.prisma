@@ -19,7 +19,8 @@ model Profile {
   bands           Band[]          @relation("profiles_bands")
   genres          Genre[]         @relation("profiles_genres")
   specialities    Speciality[]    @relation("profiles_specialities")
-  recomendations  Recomendation[]
+  followers       Recomendation[] @relation("Followed")
+  following       Recomendation[] @relation("Following")
   conversations   Conversation[]  @relation("profiles_conversations")
   created_at      DateTime        @default(now())
   updated_at      DateTime?       @updatedAt

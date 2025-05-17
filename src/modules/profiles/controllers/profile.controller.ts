@@ -40,6 +40,12 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
+  @Get('/handle/:handle')
+  async getProfileByHandle(@Param('handle') handle: string) {
+    Logger.log('/profiles/handle', 'GET');
+    return await this.profileService.findProfileByHandle(handle);
+  }
+
   @UseGuards(AuthGuard)
   @Get('/me')
   async getMyProfile(@Request() req: RequestUserPayloadDTO) {
