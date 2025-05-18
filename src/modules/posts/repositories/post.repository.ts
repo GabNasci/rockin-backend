@@ -6,10 +6,16 @@ import { Post, Prisma } from '@prisma/client';
 export class PostRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(post: Prisma.PostCreateInput): Promise<Post> {
+  async create(
+    post: Omit<Prisma.PostCreateInput, 'profile'>,
+    profileId: number,
+  ): Promise<Post> {
     return await this.prisma.post.create({
       data: {
         ...post,
+        profile: {
+          connect: { id: profileId },
+        },
       },
     });
   }
