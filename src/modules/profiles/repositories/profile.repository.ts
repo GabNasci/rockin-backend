@@ -203,6 +203,16 @@ export class ProfileRepository {
     });
   }
 
+  async findManyByIds(ids: number[]): Promise<Profile[]> {
+    return await this.prisma.profile.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
+
   async findByHandle(handle: string): Promise<Profile | null> {
     return await this.prisma.profile.findUnique({
       where: {
@@ -437,5 +447,46 @@ export class ProfileRepository {
       },
     });
     return !!recomendation;
+  }
+
+  async searchFollowings(
+    profileId: number,
+    search: string,
+  ): Promise<Profile[]> {
+    const followings = await this.prisma.recomendation.findMany({
+      where: {
+        followerId: profileId,
+      },
+      select: {
+        followingId: true,
+      },
+    });
+
+    const followingIds = followings.map((following) => following.followingId);
+
+    const profiles = await this.prisma.profile.findMany({
+      where: {
+        id: {
+          in: followingIds,
+        },
+        OR: [
+          {
+            name: {
+              contains: search,
+            },
+          },
+          {
+            handle: {
+              contains: search,
+            },
+          },
+        ],
+      },
+      include: {
+        genres: true,
+        specialities: true,
+      },
+    });
+    return profiles;
   }
 }

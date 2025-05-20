@@ -168,6 +168,18 @@ export class ProfileService {
     return profiles;
   }
 
+  async verifyIfProfilesExists(profiles: number[]) {
+    Logger.log('Verifying if profiles exists', 'ProfileService');
+    const profilesExists = await this.profileRepository.findManyByIds(profiles);
+    if (profilesExists.length !== profiles.length) {
+      Logger.error('One or more profiles do not exist', 'ProfileService');
+      throw new AppException({
+        message: 'one or more profiles do not exist',
+        statusCode: 400,
+      });
+    }
+  }
+
   async findAndVerifyUserEmailExists(email: string) {
     Logger.log('Finding user by email', 'ProfileService');
     const user = await this.userRepository.findByEmail(email);
@@ -654,5 +666,23 @@ export class ProfileService {
       followingId,
     );
     return following;
+  }
+
+  async searchFollowings(profileId: number, search: string) {
+    Logger.log('Searching followings', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const followings = await this.profileRepository.searchFollowings(
+      profileId,
+      search,
+    );
+    return followings;
   }
 }

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Logger,
   Post,
   Request,
@@ -16,6 +17,7 @@ import { AppException } from '@/errors/appException';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { RequestUserPayloadDTO } from '@modules/profiles/dtos/request_user_payload.dto';
+import { CreatePostBodyDTO } from '../dtos/create_post_body.dto';
 
 @Controller('posts')
 export class PostController {
@@ -29,8 +31,9 @@ export class PostController {
 
   @UseGuards(AuthGuard)
   @Post()
+  @HttpCode(201)
   @UseInterceptors(
-    FilesInterceptor('files', 10, {
+    FilesInterceptor('medias', 10, {
       fileFilter: (req, file, cb) => {
         if (file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
           cb(null, true);
@@ -56,17 +59,19 @@ export class PostController {
       }),
     }),
   )
-  createPost(
-    @UploadedFiles() files: Express.Multer.File[],
+  async createPost(
+    @UploadedFiles() medias: Express.Multer.File[],
     @Request() req: RequestUserPayloadDTO,
+    @Body()
+    body: CreatePostBodyDTO,
   ) {
     Logger.log('/posts -> createPost', 'POST');
-
-    console.log(
-      'Arquivos recebidos:',
-      files.map((f) => f.originalname),
+    await this.postService.create(
+      req.user.profileId,
+      body.text,
+      body.link,
+      body.tagged_profiles,
+      medias,
     );
-
-    return { message: 'Post criado com sucesso!' };
   }
 }

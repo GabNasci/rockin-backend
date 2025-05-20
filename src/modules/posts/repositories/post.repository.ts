@@ -20,6 +20,65 @@ export class PostRepository {
     });
   }
 
+  async createWithMedias({
+    profileId,
+    text,
+    link,
+    taggedProfiles,
+    medias,
+  }: {
+    profileId: number;
+    text?: string;
+    link?: string;
+    taggedProfiles?: number[];
+    medias?: Express.Multer.File[];
+  }): Promise<Post> {
+    return this.prisma.$transaction(async (tx) => {
+      const post = await tx.post.create({
+        data: {
+          text,
+          link,
+          profile: { connect: { id: profileId } },
+          tagged_profiles: taggedProfiles
+            ? {
+                connect: taggedProfiles.map((id) => ({ id })),
+              }
+            : undefined,
+        },
+        include: {
+          tagged_profiles: true,
+        },
+      });
+
+      if (medias && medias.length > 0) {
+        const mediaData = medias.map((file) => ({
+          url: file.filename,
+          type: file.mimetype,
+          post_id: post.id,
+        }));
+
+        await tx.media.createMany({ data: mediaData });
+      }
+
+      return post;
+    });
+  }
+
+  async addMedia(postId: number, mediaId: number) {
+    await this.prisma.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        medias: {
+          connect: {
+            id: mediaId,
+          },
+        },
+      },
+    });
+  }
+
   async findAll(): Promise<Post[]> {
     return await this.prisma.post.findMany();
   }

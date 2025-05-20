@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Request,
   UploadedFile,
   UseGuards,
@@ -106,6 +107,19 @@ export class ProfileController {
   async getAllProfiles() {
     Logger.log('/profiles', 'GET');
     return await this.profileService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/followings')
+  async searchFollowings(
+    @Query('q') query: string,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/followings?q=' + query, 'GET');
+    return await this.profileService.searchFollowings(
+      req.user.profileId,
+      query || '', // se não vier nada, busca todos
+    );
   }
 
   @UseGuards(AuthGuard)

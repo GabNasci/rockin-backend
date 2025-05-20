@@ -1,20 +1,24 @@
-// import {
-//   IsArray,
-//   IsEmail,
-//   IsInt,
-//   IsNotEmpty,
-//   IsOptional,
-//   IsString,
-//   Matches,
-//   MaxLength,
-//   MinLength,
-//   ValidateNested,
-// } from 'class-validator';
-// import { CreateLocationBodyDTO } from './create_location_body.dto';
-// import { Type } from 'class-transformer';
-// import { HANDLE_REGEX, NAME_REGEX } from '@/constants/regex';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+} from 'class-validator';
 
-// export class CreatePostBodyDTO {
-//   text: string;
-
-// }
+export class CreatePostBodyDTO {
+  @IsOptional()
+  @IsString()
+  @MaxLength(250)
+  text?: string;
+  @IsOptional()
+  @IsString()
+  @IsUrl()
+  @MaxLength(250)
+  link?: string;
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  tagged_profiles?: string[];
+}
