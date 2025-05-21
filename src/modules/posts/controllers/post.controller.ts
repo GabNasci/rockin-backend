@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Logger,
+  Param,
   Post,
   Request,
   UploadedFiles,
@@ -66,6 +67,8 @@ export class PostController {
     body: CreatePostBodyDTO,
   ) {
     Logger.log('/posts -> createPost', 'POST');
+    Logger.log(body);
+    Logger.log(medias);
     await this.postService.create(
       req.user.profileId,
       body.text,
@@ -73,5 +76,10 @@ export class PostController {
       body.tagged_profiles,
       medias,
     );
+  }
+  @Get('/profile/:profileId')
+  async findPostsByProfileId(@Param('profileId') profileId: number) {
+    Logger.log(`posts/profile/${profileId}`, 'GET');
+    return await this.postService.finAllByProfileId(profileId);
   }
 }

@@ -4,7 +4,6 @@ import { PostRepository } from '@modules/posts/repositories/post.repository';
 import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
 import { AppException } from '@/errors/appException';
 import { MediaRepository } from '../repositories/media.repository';
-import { stringArrayToNumberArray } from '@/utils/stringArrayToNumberArray';
 
 @Injectable()
 export class PostService {
@@ -18,11 +17,12 @@ export class PostService {
     profileId: number,
     text?: string,
     link?: string,
-    taggedProfiles?: string[],
+    taggedProfiles?: number[],
     medias?: Express.Multer.File[],
   ): Promise<Post> {
     Logger.log('Creating a new post', 'PostService');
 
+    Logger.log('Validating profile', 'PostService');
     const profile = await this.profileRepository.findById(profileId);
     if (!profile) {
       throw new AppException({
@@ -32,6 +32,7 @@ export class PostService {
       });
     }
 
+    Logger.log('Validating text or medias', 'PostService');
     if (!text && (!medias || medias.length === 0)) {
       throw new AppException({
         error: 'Bad Request',
@@ -39,9 +40,10 @@ export class PostService {
         statusCode: 400,
       });
     }
+    Logger.log('Validating tagged profiles', 'PostService');
     let convertedTaggedProfiles: number[] = [];
     if (taggedProfiles && taggedProfiles.length > 0) {
-      convertedTaggedProfiles = stringArrayToNumberArray(taggedProfiles);
+      convertedTaggedProfiles = taggedProfiles;
       const profiles = await this.profileRepository.findManyByIds(
         convertedTaggedProfiles,
       );
@@ -61,6 +63,19 @@ export class PostService {
       taggedProfiles: convertedTaggedProfiles,
       medias,
     });
+  }
+
+  async finAllByProfileId(profileId: number): Promise<Post[]> {
+    Logger.log('Finding all posts by profile id', 'PostService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Profile not found',
+        statusCode: 404,
+      });
+    }
+    return await this.postRepository.findManyByProfileId(profileId);
   }
 
   async findAll(): Promise<Post[]> {

@@ -83,6 +83,37 @@ export class PostRepository {
     return await this.prisma.post.findMany();
   }
 
+  async findManyByProfileId(profileId: number): Promise<Post[]> {
+    return await this.prisma.post.findMany({
+      where: {
+        OR: [
+          {
+            profile_id: profileId,
+          },
+          {
+            tagged_profiles: {
+              some: {
+                id: profileId,
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        medias: true,
+        tagged_profiles: true,
+        profile: {
+          include: {
+            specialities: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
   async findbyProfileId(profileId: number): Promise<Post[]> {
     return await this.prisma.post.findMany({
       where: {
