@@ -67,8 +67,6 @@ export class PostController {
     body: CreatePostBodyDTO,
   ) {
     Logger.log('/posts -> createPost', 'POST');
-    Logger.log(body);
-    Logger.log(medias);
     await this.postService.create(
       req.user.profileId,
       body.text,
