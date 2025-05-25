@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Request,
   UploadedFile,
   UseGuards,
@@ -38,6 +39,12 @@ export class ProfileController {
   async createProfile(@Body() body: CreateProfileBodyDTO) {
     Logger.log('/profiles', 'POST');
     return await this.profileService.create(body);
+  }
+
+  @Get('/handle/:handle')
+  async getProfileByHandle(@Param('handle') handle: string) {
+    Logger.log('/profiles/handle', 'GET');
+    return await this.profileService.findProfileByHandle(handle);
   }
 
   @UseGuards(AuthGuard)
@@ -100,6 +107,19 @@ export class ProfileController {
   async getAllProfiles() {
     Logger.log('/profiles', 'GET');
     return await this.profileService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/followings')
+  async searchFollowings(
+    @Query('q') query: string,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/followings?q=' + query, 'GET');
+    return await this.profileService.searchFollowings(
+      req.user.profileId,
+      query || '', // se não vier nada, busca todos
+    );
   }
 
   @UseGuards(AuthGuard)

@@ -1,5 +1,4 @@
 model Support {
-  id         Int       @id @default(autoincrement())
   profile_id Int
   post_id    Int
   profile    Profile   @relation(fields: [profile_id], references: [id])
@@ -7,5 +6,6 @@ model Support {
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 
+  @@id([post_id, profile_id])
   @@map("supports")
 }

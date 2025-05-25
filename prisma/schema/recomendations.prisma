@@ -1,9 +1,14 @@
 model Recomendation {
-  id         Int       @id @default(autoincrement())
-  profile_id Int
-  profile    Profile?  @relation(fields: [profile_id], references: [id])
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  follower  Profile @relation("Following", fields: [followerId], references: [id])
+  following Profile @relation("Followed", fields: [followingId], references: [id])
+
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 
+  @@id([followerId, followingId])
   @@map("recomendations")
 }

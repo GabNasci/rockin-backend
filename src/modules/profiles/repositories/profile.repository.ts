@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma, Profile } from '@prisma/client';
+import { Prisma, Profile, Recomendation } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { searchProfiles } from '@prisma/client/sql';
@@ -203,10 +203,37 @@ export class ProfileRepository {
     });
   }
 
+  async findManyByIds(ids: number[]): Promise<Profile[]> {
+    return await this.prisma.profile.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
+
   async findByHandle(handle: string): Promise<Profile | null> {
     return await this.prisma.profile.findUnique({
       where: {
         handle,
+      },
+      include: {
+        bands: {
+          include: {
+            profile: {
+              include: {
+                genres: true,
+              },
+            },
+          },
+        },
+        images: true,
+        specialities: true,
+        genres: true,
+        followers: true,
+        following: true,
+        posts: true,
       },
     });
   }
@@ -315,6 +342,14 @@ export class ProfileRepository {
         user_id: userId,
         id: profileId,
       },
+      include: {
+        images: true,
+        specialities: true,
+        genres: true,
+        followers: true,
+        following: true,
+        posts: true,
+      },
     });
   }
 
@@ -354,5 +389,104 @@ export class ProfileRepository {
         avatar: null,
       },
     });
+  }
+
+  async followProfile(
+    followerId: number, // quem vai seguir
+    followingId: number, // quem será seguido
+  ) {
+    await this.prisma.recomendation.create({
+      data: {
+        followerId, // quem segue
+        followingId, // quem é seguido
+      },
+      include: {
+        following: true, // inclui os dados do perfil seguido
+      },
+    });
+  }
+
+  async unfollowProfile(followerId: number, followingId: number) {
+    await this.prisma.recomendation.delete({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
+        },
+      },
+    });
+  }
+
+  async findFollowers(profileId: number): Promise<Recomendation[]> {
+    return await this.prisma.recomendation.findMany({
+      where: {
+        followingId: profileId,
+      },
+      include: {
+        follower: true,
+      },
+    });
+  }
+
+  async findFollowings(profileId: number): Promise<Recomendation[]> {
+    return await this.prisma.recomendation.findMany({
+      where: {
+        followerId: profileId,
+      },
+      include: {
+        following: true,
+      },
+    });
+  }
+
+  async isFollowing(followerId: number, followingId: number): Promise<boolean> {
+    const recomendation = await this.prisma.recomendation.findFirst({
+      where: {
+        followerId,
+        followingId,
+      },
+    });
+    return !!recomendation;
+  }
+
+  async searchFollowings(
+    profileId: number,
+    search: string,
+  ): Promise<Profile[]> {
+    const followings = await this.prisma.recomendation.findMany({
+      where: {
+        followerId: profileId,
+      },
+      select: {
+        followingId: true,
+      },
+    });
+
+    const followingIds = followings.map((following) => following.followingId);
+
+    const profiles = await this.prisma.profile.findMany({
+      where: {
+        id: {
+          in: followingIds,
+        },
+        OR: [
+          {
+            name: {
+              contains: search,
+            },
+          },
+          {
+            handle: {
+              contains: search,
+            },
+          },
+        ],
+      },
+      include: {
+        genres: true,
+        specialities: true,
+      },
+    });
+    return profiles;
   }
 }
