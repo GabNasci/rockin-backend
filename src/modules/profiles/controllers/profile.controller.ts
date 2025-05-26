@@ -135,6 +135,7 @@ export class ProfileController {
       limit: body.limit,
       radius: body.radius,
       search: body.search,
+      profileTypes: body.profileTypes,
       specialities: body.specialities,
       genres: body.genres,
     });

@@ -22,10 +22,14 @@ export class SearchRequestBodyDTO {
   radius?: number;
   @IsOptional()
   @IsArray()
-  @IsInt({ each: true })
-  specialities?: number[];
+  @IsString({ each: true })
+  specialities?: string[];
   @IsOptional()
   @IsArray()
-  @IsInt({ each: true })
-  genres?: number[];
+  @IsString({ each: true })
+  profileTypes?: string[];
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  genres?: string[];
 }
