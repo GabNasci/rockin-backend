@@ -13,6 +13,9 @@ export class ConversationRepository {
           connect: profileIds.map((id) => ({ id })),
         },
       },
+      include: {
+        profiles: true,
+      },
     });
   }
 
@@ -37,7 +40,13 @@ export class ConversationRepository {
         },
       },
       include: {
-        profiles: true,
+        profiles: {
+          where: {
+            id: {
+              not: profileId,
+            },
+          },
+        },
       },
     });
   }
@@ -48,16 +57,19 @@ export class ConversationRepository {
   ): Promise<Conversation | null> {
     return await this.prisma.conversation.findFirst({
       where: {
+        AND: [
+          { profiles: { some: { id: profileId } } },
+          { profiles: { some: { id: targetId } } },
+        ],
+      },
+      include: {
         profiles: {
-          some: {
+          where: {
             id: {
-              in: [profileId, targetId],
+              not: profileId,
             },
           },
         },
-      },
-      include: {
-        profiles: true,
       },
     });
   }
