@@ -225,6 +225,7 @@ export class ProfileRepository {
         followers: true,
         following: true,
         posts: true,
+        locations: true,
       },
     });
   }
