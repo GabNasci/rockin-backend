@@ -82,4 +82,22 @@ export class PostService {
     Logger.log('Finding all posts', 'PostService');
     return await this.postRepository.findAll();
   }
+
+  async getLinkPreview(link: string): Promise<
+    | {
+        title: string | null;
+        description: string | null;
+        image: string | null;
+        url: string;
+      }
+    | {
+        title?: undefined;
+        description?: undefined;
+        image?: undefined;
+        url?: undefined;
+      }
+  > {
+    Logger.log('Getting link preview', 'PostService');
+    return await this.postRepository.getLinkPreview(link);
+  }
 }

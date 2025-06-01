@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { Post, Prisma } from '@prisma/client';
+import * as cheerio from 'cheerio';
+import axios from 'axios';
 
 @Injectable()
 export class PostRepository {
@@ -152,5 +154,32 @@ export class PostRepository {
         id,
       },
     });
+  }
+
+  async getLinkPreview(url: string) {
+    try {
+      const { data: html }: { data: string } = await axios.get(url, {
+        timeout: 5000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; LinkPreviewBot/1.0)',
+        },
+      });
+
+      const $ = cheerio.load(html);
+
+      const getMeta = (name: string) =>
+        $(`meta[property="${name}"]`).attr('content') ||
+        $(`meta[name="${name}"]`).attr('content') ||
+        null;
+
+      return {
+        title: getMeta('og:title') || $('title').text() || null,
+        description: getMeta('og:description'),
+        image: getMeta('og:image'),
+        url: getMeta('og:url') || url,
+      };
+    } catch {
+      return {};
+    }
   }
 }

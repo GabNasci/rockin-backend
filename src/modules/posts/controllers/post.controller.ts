@@ -80,4 +80,10 @@ export class PostController {
     Logger.log(`posts/profile/${profileId}`, 'GET');
     return await this.postService.finAllByProfileId(profileId);
   }
+
+  @Post('/link-preview')
+  async getLinkPreview(@Body('link') link: string) {
+    Logger.log('/posts/link-preview', 'POST');
+    return await this.postService.getLinkPreview(link);
+  }
 }

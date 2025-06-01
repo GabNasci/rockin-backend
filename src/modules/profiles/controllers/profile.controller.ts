@@ -118,7 +118,7 @@ export class ProfileController {
     Logger.log('/profiles/followings?q=' + query, 'GET');
     return await this.profileService.searchFollowings(
       req.user.profileId,
-      query || '', // se não vier nada, busca todos
+      query || '',
     );
   }
 
