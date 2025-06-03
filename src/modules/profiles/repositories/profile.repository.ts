@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma, Profile, Recomendation } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
