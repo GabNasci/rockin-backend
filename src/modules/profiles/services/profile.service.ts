@@ -429,14 +429,21 @@ export class ProfileService {
       profileId: userProfile.id,
     });
 
+    const isFirstPage = page === 1;
+    const isLastPage = page === Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+
     return {
       profiles: profiles,
       page: page,
       limit: limit,
       total: total,
-      totalPages: Math.ceil(total / limit),
-      isFirstPage: page === 1,
-      isLastpage: page === Math.ceil(total / limit),
+      totalPages: totalPages,
+      isFirstPage,
+      isLastPage,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: !isFirstPage ? page - 1 : null,
     };
   }
 

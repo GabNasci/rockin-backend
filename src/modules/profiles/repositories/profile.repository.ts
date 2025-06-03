@@ -103,8 +103,6 @@ export class ProfileRepository {
       profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 
-    Logger.log('profiles encontrados:', profileIds);
-
     const shouldFilterByProfileIds = hasCoordinates && radius;
 
     // Busca inicial sem paginação
@@ -126,11 +124,24 @@ export class ProfileRepository {
               },
             }
           : {}),
-        name: {
-          contains: search,
-          mode: 'insensitive',
-        },
-        // Aqui ainda usamos `some` pra buscar os candidatos
+        ...(search
+          ? {
+              OR: [
+                {
+                  name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  handle: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            }
+          : {}),
         ...(specialities && specialities.length > 0
           ? {
               specialities: {

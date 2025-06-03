@@ -7,5 +7,7 @@ export class SearchResponseBodyDTO {
   total: number;
   totalPages: number;
   isFirstPage: boolean;
-  isLastpage: boolean;
+  isLastPage: boolean;
+  prevPage: number | null;
+  nextPage: number | null;
 }
