@@ -103,7 +103,22 @@ export class ProfileRepository {
       profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 
-    const shouldFilterByProfileIds = hasCoordinates && radius;
+    const shouldFilterByProfileIds =
+      hasCoordinates && !!radius && profileIds.length > 0;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let idFilter: any = undefined;
+
+    if (shouldFilterByProfileIds) {
+      idFilter = { in: profileIds };
+    }
+
+    if (profileId) {
+      idFilter = {
+        ...(idFilter || {}),
+        not: profileId,
+      };
+    }
 
     // Busca inicial sem paginação
     const allProfiles = await this.prisma.profile.findMany({
@@ -113,8 +128,7 @@ export class ProfileRepository {
         locations: true,
       },
       where: {
-        ...(shouldFilterByProfileIds ? { id: { in: profileIds } } : {}),
-        ...(profileId ? { id: { not: profileId } } : {}),
+        ...(idFilter ? { id: idFilter } : {}),
         ...(profileTypes && profileTypes.length > 0
           ? {
               profile_type: {
