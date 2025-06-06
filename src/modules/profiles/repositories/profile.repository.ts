@@ -75,6 +75,11 @@ export class ProfileRepository {
         specialities: true,
         genres: true,
         locations: true,
+        band: {
+          include: {
+            members: true,
+          },
+        },
       },
     });
   }
@@ -126,6 +131,11 @@ export class ProfileRepository {
         specialities: true,
         genres: true,
         locations: true,
+        band: {
+          include: {
+            members: true,
+          },
+        },
       },
       where: {
         ...(idFilter ? { id: idFilter } : {}),
