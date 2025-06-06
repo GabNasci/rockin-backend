@@ -122,7 +122,7 @@ export class ProfileController {
     );
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Post('/search')
   async searchProfiles(
     @Body() body: SearchRequestBodyDTO,
@@ -130,7 +130,7 @@ export class ProfileController {
   ) {
     Logger.log('/search', 'POST');
     return await this.profileService.search({
-      userId: req.user.id,
+      profileId: req.user?.id,
       page: body.page,
       limit: body.limit,
       radius: body.radius,

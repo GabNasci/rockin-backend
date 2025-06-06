@@ -208,13 +208,15 @@ export class ProfileRepository {
     return await this.prisma.profile.count();
   }
 
-  async findById(id: number): Promise<Profile | null> {
+  async findById(id: number | undefined) {
+    if (!id) return null;
     return await this.prisma.profile.findUnique({
       where: {
         id,
       },
       include: {
         specialities: true,
+        locations: true,
       },
     });
   }

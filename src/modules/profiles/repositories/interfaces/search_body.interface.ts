@@ -8,5 +8,5 @@ export interface SearchBody {
   profileTypes?: string[] | undefined;
   specialities?: string[] | undefined;
   genres?: string[] | undefined;
-  profileId: number;
+  profileId: number | undefined;
 }

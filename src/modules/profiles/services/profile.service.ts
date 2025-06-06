@@ -369,7 +369,7 @@ export class ProfileService {
   async search({
     page,
     limit,
-    userId,
+    profileId,
     radius,
     profileTypes,
     search,
@@ -378,7 +378,7 @@ export class ProfileService {
   }: {
     page: number;
     limit: number;
-    userId: number;
+    profileId?: number;
     radius?: number;
     search?: string;
     profileTypes?: string[];
@@ -386,34 +386,15 @@ export class ProfileService {
     genres?: string[];
   }): Promise<SearchResponseBodyDTO> {
     Logger.log('Searching profiles', 'ProfileService');
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      Logger.error('User not found', 'ProfileService');
-      throw new AppException({
-        error: 'Not found',
-        message: 'user not found',
-        statusCode: 404,
-      });
-    }
+    const userProfile = await this.profileRepository.findById(profileId);
 
-    const userProfile = await this.profileRepository.findByUserId(user.id);
-
-    if (!userProfile) {
-      Logger.error('User profile not found', 'ProfileService');
-      throw new AppException({
-        error: 'Not found',
-        message: 'user profile not found',
-        statusCode: 404,
-      });
-    }
-
-    const latitudeRaw = userProfile.locations?.latitude;
-    const longitudeRaw = userProfile.locations?.longitude;
+    const latitudeRaw = userProfile?.locations?.latitude;
+    const longitudeRaw = userProfile?.locations?.longitude;
 
     const latitude = formatCoordinates(latitudeRaw);
     const longitude = formatCoordinates(longitudeRaw);
 
-    Logger.log(`user ${user?.email} searching`, 'ProfileService');
+    Logger.log(`user ${userProfile?.avatar} searching`, 'ProfileService');
     Logger.log(`search ${search}`, 'ProfileService');
     const skip = (page - 1) * limit;
     const { profiles, total } = await this.profileRepository.search({
@@ -426,7 +407,7 @@ export class ProfileService {
       profileTypes: profileTypes,
       specialities: specialities,
       genres: genres,
-      profileId: userProfile.id,
+      profileId: profileId,
     });
 
     const isFirstPage = page === 1;
