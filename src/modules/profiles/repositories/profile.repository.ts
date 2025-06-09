@@ -241,7 +241,7 @@ export class ProfileRepository {
     });
   }
 
-  async findByHandle(handle: string): Promise<Profile | null> {
+  async findByHandle(handle: string) {
     return await this.prisma.profile.findUnique({
       where: {
         handle,
@@ -265,6 +265,45 @@ export class ProfileRepository {
         locations: true,
       },
     });
+  }
+  async findByHandleWithMeta(handle: string, profileId?: number) {
+    const profile = await this.prisma.profile.findUnique({
+      where: {
+        handle,
+      },
+      include: {
+        bands: {
+          include: {
+            profile: {
+              include: {
+                genres: true,
+              },
+            },
+          },
+        },
+        images: true,
+        specialities: true,
+        genres: true,
+        followers: true,
+        following: true,
+        posts: true,
+        locations: true,
+      },
+    });
+
+    return {
+      ...profile,
+      followersCount: profile?.followers.length ?? 0,
+      followingCount: profile?.following.length ?? 0,
+      postsCount: profile?.posts.length ?? 0,
+      bandsCount: profile?.bands.length ?? 0,
+      isFollowing: profile?.followers.some(
+        (follower) => follower.followerId === profileId,
+      ),
+      isFollowingBack: profile?.following.some(
+        (following) => following.followingId === profileId,
+      ),
+    };
   }
 
   async findByUserId(userId: number) {

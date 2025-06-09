@@ -144,6 +144,41 @@ export class PostRepository {
     return posts;
   }
 
+  async findAllWithMetaByProfileId(profileId: number) {
+    const AllpostsWithSupports = await this.prisma.post.findMany({
+      where: {
+        profile_id: profileId,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        supports: {
+          include: {
+            profile: true,
+          },
+        },
+        medias: true,
+        tagged_profiles: true,
+        profile: {
+          include: {
+            specialities: true,
+          },
+        },
+      },
+    });
+
+    const posts = AllpostsWithSupports.map((post) => ({
+      ...post,
+      liked: profileId
+        ? post.supports.some((support) => support.profile.id === profileId)
+        : false,
+      likedCount: post.supports.length,
+    }));
+
+    return posts;
+  }
+
   async findManyByProfileId(profileId: number): Promise<Post[]> {
     return await this.prisma.post.findMany({
       where: {

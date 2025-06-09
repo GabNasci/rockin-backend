@@ -433,7 +433,7 @@ export class ProfileService {
     return await this.profileRepository.findById(id);
   }
 
-  async findProfileByHandle(handle: string): Promise<Profile | null> {
+  async findProfileByHandle(handle: string, profileId?: number) {
     Logger.log('Finding profile by handle', 'ProfileService');
     const profile = await this.profileRepository.findByHandle(handle);
     if (!profile) {
@@ -444,7 +444,7 @@ export class ProfileService {
         statusCode: 404,
       });
     }
-    return await this.profileRepository.findByHandle(handle);
+    return await this.profileRepository.findByHandleWithMeta(handle, profileId);
   }
 
   async findByHandle(

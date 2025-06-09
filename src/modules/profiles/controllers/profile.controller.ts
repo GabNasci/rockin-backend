@@ -27,6 +27,7 @@ import { AppException } from '@/errors/appException';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
+import { OptionalAuthGuard } from '@modules/auth/guards/optional-auth.guard';
 
 @Controller('profiles')
 export class ProfileController {
@@ -41,10 +42,17 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get('/handle/:handle')
-  async getProfileByHandle(@Param('handle') handle: string) {
+  async getProfileByHandle(
+    @Param('handle') handle: string,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
     Logger.log('/profiles/handle', 'GET');
-    return await this.profileService.findProfileByHandle(handle);
+    return await this.profileService.findProfileByHandle(
+      handle,
+      req?.user?.profileId,
+    );
   }
 
   @UseGuards(AuthGuard)
@@ -198,5 +206,27 @@ export class ProfileController {
   async getProfileTypes() {
     Logger.log('/profiles/profile-types', 'GET');
     return await this.profileTypeRepository.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/:profileId/follow')
+  @HttpCode(200)
+  async followProfile(
+    @Param('profileId') profileId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/:profileId/follow', 'POST');
+    await this.profileService.followProfile(req.user.profileId, profileId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:profileId/follow')
+  @HttpCode(200)
+  async unfollowProfile(
+    @Param('profileId') profileId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/:profileId/follow', 'POST');
+    await this.profileService.unfollowProfile(req.user.profileId, profileId);
   }
 }

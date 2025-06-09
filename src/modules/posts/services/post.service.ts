@@ -75,7 +75,7 @@ export class PostService {
         statusCode: 404,
       });
     }
-    return await this.postRepository.findManyByProfileId(profileId);
+    return await this.postRepository.findAllWithMetaByProfileId(profileId);
   }
 
   async findAll(profileId: number | undefined) {
