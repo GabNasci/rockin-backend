@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Prisma, Profile, Recomendation } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
@@ -75,6 +75,11 @@ export class ProfileRepository {
         specialities: true,
         genres: true,
         locations: true,
+        band: {
+          include: {
+            members: true,
+          },
+        },
       },
     });
   }
@@ -86,6 +91,7 @@ export class ProfileRepository {
     radius,
     latitude,
     longitude,
+    profileTypes,
     specialities,
     genres,
     profileId,
@@ -102,64 +108,69 @@ export class ProfileRepository {
       profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 
-    if (profileId && profileIds.length > 0) {
-      profileIds = profileIds.filter((id) => id !== profileId);
+    const shouldFilterByProfileIds =
+      hasCoordinates && !!radius && profileIds.length > 0;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let idFilter: any = undefined;
+
+    if (shouldFilterByProfileIds) {
+      idFilter = { in: profileIds };
     }
 
-    Logger.log('profiles encontrados:', profileIds);
+    if (profileId) {
+      idFilter = {
+        ...(idFilter || {}),
+        not: profileId,
+      };
+    }
 
-    // Contagem total de registros sem aplicar paginação
-    const total = await this.prisma.profile.count({
-      where: {
-        ...(profileIds.length ? { id: { in: profileIds } } : {}),
-        name: {
-          contains: search,
-          mode: 'insensitive',
-        },
-        ...(specialities && specialities.length > 0
-          ? {
-              specialities: {
-                some: {
-                  id: {
-                    in: specialities,
-                  },
-                },
-              },
-            }
-          : {}),
-        ...(genres && genres.length > 0
-          ? {
-              genres: {
-                some: {
-                  id: {
-                    in: genres,
-                  },
-                },
-              },
-            }
-          : {}),
-      },
-    });
-
-    const shouldFilterByProfileIds = hasCoordinates && radius;
-
-    const profiles = await this.prisma.profile.findMany({
+    // Busca inicial sem paginação
+    const allProfiles = await this.prisma.profile.findMany({
       include: {
         specialities: true,
         genres: true,
         locations: true,
+        band: {
+          include: {
+            members: true,
+          },
+        },
       },
       where: {
-        ...(shouldFilterByProfileIds ? { id: { in: profileIds } } : {}),
-        name: {
-          contains: search,
-          mode: 'insensitive',
-        },
+        ...(idFilter ? { id: idFilter } : {}),
+        ...(profileTypes && profileTypes.length > 0
+          ? {
+              profile_type: {
+                name: {
+                  in: profileTypes,
+                },
+              },
+            }
+          : {}),
+        ...(search
+          ? {
+              OR: [
+                {
+                  name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  handle: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            }
+          : {}),
         ...(specialities && specialities.length > 0
           ? {
               specialities: {
                 some: {
-                  id: {
+                  name: {
                     in: specialities,
                   },
                 },
@@ -170,7 +181,7 @@ export class ProfileRepository {
           ? {
               genres: {
                 some: {
-                  id: {
+                  name: {
                     in: genres,
                   },
                 },
@@ -178,13 +189,28 @@ export class ProfileRepository {
             }
           : {}),
       },
-      skip,
-      take,
     });
 
+    // Filtro em memória: perfis que tenham TODOS os gêneros e especialidades
+    const filteredProfiles = allProfiles.filter((profile) => {
+      const hasAllGenres =
+        !genres ||
+        genres.every((g) => profile.genres.some((genre) => genre.name === g));
+
+      const hasAllSpecialities =
+        !specialities ||
+        specialities.every((s) =>
+          profile.specialities.some((spec) => spec.name === s),
+        );
+
+      return hasAllGenres && hasAllSpecialities;
+    });
+
+    const paginatedProfiles = filteredProfiles.slice(skip, skip + take);
+
     return {
-      profiles,
-      total,
+      profiles: paginatedProfiles,
+      total: filteredProfiles.length,
     };
   }
 
@@ -192,13 +218,15 @@ export class ProfileRepository {
     return await this.prisma.profile.count();
   }
 
-  async findById(id: number): Promise<Profile | null> {
+  async findById(id: number | undefined) {
+    if (!id) return null;
     return await this.prisma.profile.findUnique({
       where: {
         id,
       },
       include: {
         specialities: true,
+        locations: true,
       },
     });
   }
@@ -213,7 +241,7 @@ export class ProfileRepository {
     });
   }
 
-  async findByHandle(handle: string): Promise<Profile | null> {
+  async findByHandle(handle: string) {
     return await this.prisma.profile.findUnique({
       where: {
         handle,
@@ -234,8 +262,48 @@ export class ProfileRepository {
         followers: true,
         following: true,
         posts: true,
+        locations: true,
       },
     });
+  }
+  async findByHandleWithMeta(handle: string, profileId?: number) {
+    const profile = await this.prisma.profile.findUnique({
+      where: {
+        handle,
+      },
+      include: {
+        bands: {
+          include: {
+            profile: {
+              include: {
+                genres: true,
+              },
+            },
+          },
+        },
+        images: true,
+        specialities: true,
+        genres: true,
+        followers: true,
+        following: true,
+        posts: true,
+        locations: true,
+      },
+    });
+
+    return {
+      ...profile,
+      followersCount: profile?.followers.length ?? 0,
+      followingCount: profile?.following.length ?? 0,
+      postsCount: profile?.posts.length ?? 0,
+      bandsCount: profile?.bands.length ?? 0,
+      isFollowing: profile?.followers.some(
+        (follower) => follower.followerId === profileId,
+      ),
+      isFollowingBack: profile?.following.some(
+        (following) => following.followingId === profileId,
+      ),
+    };
   }
 
   async findByUserId(userId: number) {

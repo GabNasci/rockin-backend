@@ -5,7 +5,8 @@ export interface SearchBody {
   radius?: number | undefined;
   latitude?: number | undefined;
   longitude?: number | undefined;
-  specialities?: number[] | undefined;
-  genres?: number[] | undefined;
-  profileId: number;
+  profileTypes?: string[] | undefined;
+  specialities?: string[] | undefined;
+  genres?: string[] | undefined;
+  profileId: number | undefined;
 }

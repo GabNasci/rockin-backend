@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Logger,
@@ -19,15 +20,39 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { RequestUserPayloadDTO } from '@modules/profiles/dtos/request_user_payload.dto';
 import { CreatePostBodyDTO } from '../dtos/create_post_body.dto';
+import { OptionalAuthGuard } from '@modules/auth/guards/optional-auth.guard';
 
 @Controller('posts')
 export class PostController {
   constructor(private postService: PostService) {}
 
+  @UseGuards(OptionalAuthGuard)
   @Get()
-  async getAllPosts() {
+  async getAllPosts(@Request() req: RequestUserPayloadDTO) {
     Logger.log('/posts', 'GET');
-    return await this.postService.findAll();
+    return await this.postService.findAll(req?.user?.profileId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/:postId/like')
+  @HttpCode(200)
+  async likePost(
+    @Param('postId') postId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log(`/posts/${postId}/like`, 'POST');
+    await this.postService.likePost(req.user.profileId, postId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:postId/like')
+  @HttpCode(200)
+  async unlikePost(
+    @Param('postId') postId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log(`/posts/${postId}/like`, 'POST');
+    await this.postService.unlikePost(req.user.profileId, postId);
   }
 
   @UseGuards(AuthGuard)
@@ -79,5 +104,11 @@ export class PostController {
   async findPostsByProfileId(@Param('profileId') profileId: number) {
     Logger.log(`posts/profile/${profileId}`, 'GET');
     return await this.postService.finAllByProfileId(profileId);
+  }
+
+  @Post('/link-preview')
+  async getLinkPreview(@Body('link') link: string) {
+    Logger.log('/posts/link-preview', 'POST');
+    return await this.postService.getLinkPreview(link);
   }
 }

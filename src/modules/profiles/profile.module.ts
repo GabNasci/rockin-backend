@@ -11,10 +11,18 @@ import { ProfileRepository } from './repositories/profile.repository';
 import { AuthModule } from '@modules/auth/auth.module';
 import { FileService } from './services/file.service';
 import { ImageRepository } from './repositories/image.repository';
+import { ConversationController } from './controllers/conversation.controller';
+import { ConversationRepository } from './repositories/conversation.repository';
+import { ConversationService } from './services/conversation.service';
 
 @Module({
   imports: [DatabaseModule, forwardRef(() => AuthModule)],
-  controllers: [GenreController, SpecialityController, ProfileController],
+  controllers: [
+    GenreController,
+    SpecialityController,
+    ProfileController,
+    ConversationController,
+  ],
   providers: [
     GenreService,
     SpecialityService,
@@ -23,6 +31,8 @@ import { ImageRepository } from './repositories/image.repository';
     ProfileRepository,
     FileService,
     ImageRepository,
+    ConversationRepository,
+    ConversationService,
   ],
   exports: [
     GenreService,

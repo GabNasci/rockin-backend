@@ -369,49 +369,32 @@ export class ProfileService {
   async search({
     page,
     limit,
-    userId,
+    profileId,
     radius,
+    profileTypes,
     search,
     specialities,
     genres,
   }: {
     page: number;
     limit: number;
-    userId: number;
+    profileId?: number;
     radius?: number;
     search?: string;
-    specialities?: number[];
-    genres?: number[];
+    profileTypes?: string[];
+    specialities?: string[];
+    genres?: string[];
   }): Promise<SearchResponseBodyDTO> {
     Logger.log('Searching profiles', 'ProfileService');
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      Logger.error('User not found', 'ProfileService');
-      throw new AppException({
-        error: 'Not found',
-        message: 'user not found',
-        statusCode: 404,
-      });
-    }
+    const userProfile = await this.profileRepository.findById(profileId);
 
-    const userProfile = await this.profileRepository.findByUserId(user.id);
-
-    if (!userProfile) {
-      Logger.error('User profile not found', 'ProfileService');
-      throw new AppException({
-        error: 'Not found',
-        message: 'user profile not found',
-        statusCode: 404,
-      });
-    }
-
-    const latitudeRaw = userProfile.locations?.latitude;
-    const longitudeRaw = userProfile.locations?.longitude;
+    const latitudeRaw = userProfile?.locations?.latitude;
+    const longitudeRaw = userProfile?.locations?.longitude;
 
     const latitude = formatCoordinates(latitudeRaw);
     const longitude = formatCoordinates(longitudeRaw);
 
-    Logger.log(`user ${user?.email} searching`, 'ProfileService');
+    Logger.log(`user ${userProfile?.avatar} searching`, 'ProfileService');
     Logger.log(`search ${search}`, 'ProfileService');
     const skip = (page - 1) * limit;
     const { profiles, total } = await this.profileRepository.search({
@@ -421,19 +404,27 @@ export class ProfileService {
       radius: radius,
       latitude: latitude,
       longitude: longitude,
+      profileTypes: profileTypes,
       specialities: specialities,
       genres: genres,
-      profileId: userProfile.id,
+      profileId: profileId,
     });
+
+    const isFirstPage = page === 1;
+    const isLastPage = page === Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
 
     return {
       profiles: profiles,
       page: page,
       limit: limit,
       total: total,
-      totalPages: Math.ceil(total / limit),
-      isFirstPage: page === 1,
-      isLastpage: page === Math.ceil(total / limit),
+      totalPages: totalPages,
+      isFirstPage,
+      isLastPage,
+      nextPage: hasNextPage ? page + 1 : null,
+      prevPage: !isFirstPage ? page - 1 : null,
     };
   }
 
@@ -442,7 +433,7 @@ export class ProfileService {
     return await this.profileRepository.findById(id);
   }
 
-  async findProfileByHandle(handle: string): Promise<Profile | null> {
+  async findProfileByHandle(handle: string, profileId?: number) {
     Logger.log('Finding profile by handle', 'ProfileService');
     const profile = await this.profileRepository.findByHandle(handle);
     if (!profile) {
@@ -453,7 +444,7 @@ export class ProfileService {
         statusCode: 404,
       });
     }
-    return await this.profileRepository.findByHandle(handle);
+    return await this.profileRepository.findByHandleWithMeta(handle, profileId);
   }
 
   async findByHandle(
