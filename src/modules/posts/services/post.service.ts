@@ -78,8 +78,22 @@ export class PostService {
     return await this.postRepository.findManyByProfileId(profileId);
   }
 
-  async findAll(): Promise<Post[]> {
+  async findAll(profileId: number | undefined) {
     Logger.log('Finding all posts', 'PostService');
+    if (profileId) {
+      const profile = await this.profileRepository.findById(profileId);
+      if (!profile) {
+        throw new AppException({
+          error: 'Not Found',
+          message: 'Profile not found',
+          statusCode: 404,
+        });
+      }
+      Logger.log('Finding all posts by profile id', 'PostService');
+      const allPosts = await this.postRepository.findAllWhitMeta(profileId);
+      return allPosts;
+    }
+
     return await this.postRepository.findAll();
   }
 
@@ -99,5 +113,47 @@ export class PostService {
   > {
     Logger.log('Getting link preview', 'PostService');
     return await this.postRepository.getLinkPreview(link);
+  }
+
+  async likePost(profileId: number, postId: number) {
+    Logger.log('Liking a post', 'PostService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Profile not found',
+        statusCode: 404,
+      });
+    }
+    const post = await this.postRepository.findById(postId);
+    if (!post) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Post not found',
+        statusCode: 404,
+      });
+    }
+    await this.postRepository.likePost(profileId, postId);
+  }
+
+  async unlikePost(profileId: number, postId: number) {
+    Logger.log('Unliking a post', 'PostService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Profile not found',
+        statusCode: 404,
+      });
+    }
+    const post = await this.postRepository.findById(postId);
+    if (!post) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Post not found',
+        statusCode: 404,
+      });
+    }
+    await this.postRepository.unlikePost(profileId, postId);
   }
 }

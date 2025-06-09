@@ -81,8 +81,67 @@ export class PostRepository {
     });
   }
 
-  async findAll(): Promise<Post[]> {
-    return await this.prisma.post.findMany();
+  async findAll() {
+    const posts = await this.prisma.post.findMany({
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        supports: {
+          include: {
+            profile: true,
+          },
+        },
+        medias: true,
+        tagged_profiles: true,
+        profile: {
+          include: {
+            specialities: true,
+          },
+        },
+      },
+    });
+    return posts.map((post) => ({
+      ...post,
+      liked: false,
+      likedCount: post.supports.length,
+    }));
+  }
+
+  async findAllWhitMeta(profileId: number | undefined) {
+    const AllpostsWithSupports = await this.prisma.post.findMany({
+      orderBy: {
+        created_at: 'desc',
+      },
+      include: {
+        supports: {
+          include: {
+            profile: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+        medias: true,
+        tagged_profiles: true,
+        profile: {
+          include: {
+            specialities: true,
+          },
+        },
+      },
+    });
+
+    const posts = AllpostsWithSupports.map((post) => ({
+      ...post,
+      liked: profileId
+        ? post.supports.some((support) => support.profile.id === profileId)
+        : false,
+      likedCount: post.supports.length,
+    }));
+
+    return posts;
   }
 
   async findManyByProfileId(profileId: number): Promise<Post[]> {
@@ -112,6 +171,24 @@ export class PostRepository {
       },
       orderBy: {
         created_at: 'desc',
+      },
+    });
+  }
+
+  async findById(id: number): Promise<Post | null> {
+    return await this.prisma.post.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        supports: true,
+        medias: true,
+        tagged_profiles: true,
+        profile: {
+          include: {
+            specialities: true,
+          },
+        },
       },
     });
   }
