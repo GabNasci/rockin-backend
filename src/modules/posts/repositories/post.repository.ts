@@ -147,7 +147,18 @@ export class PostRepository {
   async findAllWithMetaByProfileId(profileId: number) {
     const AllpostsWithSupports = await this.prisma.post.findMany({
       where: {
-        profile_id: profileId,
+        OR: [
+          {
+            profile_id: profileId,
+          },
+          {
+            tagged_profiles: {
+              some: {
+                id: profileId,
+              },
+            },
+          },
+        ],
       },
       orderBy: {
         created_at: 'desc',
