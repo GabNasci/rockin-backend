@@ -15,6 +15,7 @@ import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AuthService } from '@modules/auth/services/auth.service';
 import { join } from 'path';
 import { unlink } from 'fs/promises';
+import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Injectable()
 export class ProfileService {
@@ -72,6 +73,23 @@ export class ProfileService {
       });
     }
   }
+
+  // async update(profileId: number, profile: UpdateProfileBodyDTO) {
+  //   Logger.log('Updating profile', 'ProfileService');
+  //   const profileToUpdate = await this.profileRepository.findById(profileId);
+  //   if (!profileToUpdate) {
+  //     Logger.error('Profile not found', 'ProfileService');
+  //     throw new AppException({
+  //       message: 'profile not found',
+  //       statusCode: 404,
+  //     });
+  //   }
+
+  //   return await this.profileRepository.update(profileId, {
+  //     ...profile,
+  //     genres: profile.genres,
+  //   });
+  // }
 
   async createOnlyProfile(profile: {
     name: string;
