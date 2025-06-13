@@ -28,7 +28,6 @@ import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
 import { OptionalAuthGuard } from '@modules/auth/guards/optional-auth.guard';
-import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -122,10 +121,11 @@ export class ProfileController {
     });
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get()
-  async getAllProfiles() {
+  async getAllProfiles(@Request() req: RequestUserPayloadDTO) {
     Logger.log('/profiles', 'GET');
-    return await this.profileService.findAll();
+    return await this.profileService.findAllWithMeta(req?.user?.profileId);
   }
 
   @UseGuards(AuthGuard)

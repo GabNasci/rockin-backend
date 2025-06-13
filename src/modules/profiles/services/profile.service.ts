@@ -15,7 +15,6 @@ import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AuthService } from '@modules/auth/services/auth.service';
 import { join } from 'path';
 import { unlink } from 'fs/promises';
-import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Injectable()
 export class ProfileService {
@@ -382,6 +381,11 @@ export class ProfileService {
   async findAll(): Promise<Profile[]> {
     Logger.log('Finding all profiles', 'ProfileService');
     return await this.profileRepository.findAll();
+  }
+
+  async findAllWithMeta(profileId?: number): Promise<Profile[]> {
+    Logger.log('Finding all profiles', 'ProfileService');
+    return await this.profileRepository.findAllWithMeta(profileId);
   }
 
   async search({

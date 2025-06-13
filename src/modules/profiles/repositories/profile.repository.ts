@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Profile, Recomendation } from '@prisma/client';
+import { Profile, Recomendation } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { searchProfiles } from '@prisma/client/sql';
 import { SearchBody } from './interfaces/search_body.interface';
-import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Injectable()
 export class ProfileRepository {
@@ -305,6 +304,47 @@ export class ProfileRepository {
         (following) => following.followingId === profileId,
       ),
     };
+  }
+
+  async findAllWithMeta(profileId?: number) {
+    const profiles = await this.prisma.profile.findMany({
+      where: {
+        NOT: {
+          id: profileId,
+        },
+      },
+      include: {
+        bands: {
+          include: {
+            profile: {
+              include: {
+                genres: true,
+              },
+            },
+          },
+        },
+        images: true,
+        specialities: true,
+        genres: true,
+        followers: true,
+        following: true,
+        posts: true,
+        locations: true,
+      },
+    });
+    return profiles.map((profile) => ({
+      ...profile,
+      followersCount: profile?.followers.length ?? 0,
+      followingCount: profile?.following.length ?? 0,
+      postsCount: profile?.posts.length ?? 0,
+      bandsCount: profile?.bands.length ?? 0,
+      isFollowing: profile?.followers.some(
+        (follower) => follower.followerId === profileId,
+      ),
+      isFollowingBack: profile?.following.some(
+        (following) => following.followingId === profileId,
+      ),
+    }));
   }
 
   async findByUserId(userId: number) {
