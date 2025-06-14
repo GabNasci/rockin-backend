@@ -698,4 +698,9 @@ export class ProfileService {
     );
     return followings;
   }
+
+  async checkHandleExists(handle: string) {
+    Logger.log('Checking handle exists', 'ProfileService');
+    await this.findAndVerifyProfileHandleExists(handle);
+  }
 }

@@ -100,10 +100,18 @@ export class PostController {
       medias,
     );
   }
+
+  @UseGuards(OptionalAuthGuard)
   @Get('/profile/:profileId')
-  async findPostsByProfileId(@Param('profileId') profileId: number) {
+  async findPostsByProfileId(
+    @Param('profileId') profileId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
     Logger.log(`posts/profile/${profileId}`, 'GET');
-    return await this.postService.finAllByProfileId(profileId);
+    return await this.postService.finAllByProfileId(
+      profileId,
+      req?.user?.profileId,
+    );
   }
 
   @Post('/link-preview')

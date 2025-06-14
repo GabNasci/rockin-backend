@@ -240,4 +240,11 @@ export class ProfileController {
     Logger.log('/profiles/:profileId/follow', 'POST');
     await this.profileService.unfollowProfile(req.user.profileId, profileId);
   }
+
+  @Get('/handle/exists/:handle')
+  @HttpCode(200)
+  async checkHandleExists(@Param('handle') handle: string) {
+    Logger.log('/profiles/handle/exists/' + handle, 'GET');
+    await this.profileService.checkHandleExists(handle);
+  }
 }
