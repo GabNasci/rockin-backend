@@ -26,10 +26,10 @@ export class BandController {
     @Body() body: AddBandBodyDTO,
     @Request() req: RequestUserPayloadDTO,
   ) {
-    Logger.log('/profiles/bands/add', 'POST');
+    Logger.log('/bands/add', 'POST');
     return await this.bandService.createBandProfile({
       userId: req.user.id,
-      profileId: body.profileId,
+      profileId: req.user.profileId,
       name: body.name,
       handle: body.handle,
       genres: body.genres,

@@ -247,4 +247,11 @@ export class ProfileController {
     Logger.log('/profiles/handle/exists/' + handle, 'GET');
     await this.profileService.checkHandleExists(handle);
   }
+
+  @Get('/email/exists/:email')
+  @HttpCode(200)
+  async checkEmailExists(@Param('email') email: string) {
+    Logger.log('/profiles/email/exists/' + email, 'GET');
+    await this.profileService.checkEmailExists(email);
+  }
 }

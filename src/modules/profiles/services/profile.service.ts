@@ -113,7 +113,7 @@ export class ProfileService {
   async changeProfile(
     payload: RequestUserPayloadDTO,
     newProfileId: number,
-  ): Promise<{ token: string }> {
+  ): Promise<{ token: string; profile: Profile }> {
     // Verifica se o novo profile pertence ao usuário
     const profile = await this.profileRepository.findById(newProfileId);
     if (!profile) {
@@ -148,7 +148,7 @@ export class ProfileService {
       expiresIn,
     );
 
-    return { token };
+    return { token, profile };
   }
 
   async findByUserIdAndProfileId(
@@ -702,5 +702,10 @@ export class ProfileService {
   async checkHandleExists(handle: string) {
     Logger.log('Checking handle exists', 'ProfileService');
     await this.findAndVerifyProfileHandleExists(handle);
+  }
+
+  async checkEmailExists(email: string) {
+    Logger.log('Checking email exists', 'ProfileService');
+    await this.findAndVerifyUserEmailExists(email);
   }
 }

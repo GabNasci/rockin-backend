@@ -11,9 +11,6 @@ import {
 } from 'class-validator';
 
 export class AddBandBodyDTO {
-  @IsInt()
-  @IsNotEmpty()
-  profileId: number;
   @IsString()
   @Matches(NAME_REGEX, {
     message: 'Name must contain only letters and spaces',
