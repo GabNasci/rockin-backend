@@ -14,6 +14,9 @@ import { ImageRepository } from './repositories/image.repository';
 import { ConversationController } from './controllers/conversation.controller';
 import { ConversationRepository } from './repositories/conversation.repository';
 import { ConversationService } from './services/conversation.service';
+import { BandController } from './controllers/band.controller';
+import { BandRepository } from './repositories/band.repository';
+import { BandService } from './services/band.service';
 
 @Module({
   imports: [DatabaseModule, forwardRef(() => AuthModule)],
@@ -22,6 +25,7 @@ import { ConversationService } from './services/conversation.service';
     SpecialityController,
     ProfileController,
     ConversationController,
+    BandController,
   ],
   providers: [
     GenreService,
@@ -33,6 +37,8 @@ import { ConversationService } from './services/conversation.service';
     ImageRepository,
     ConversationRepository,
     ConversationService,
+    BandRepository,
+    BandService,
   ],
   exports: [
     GenreService,

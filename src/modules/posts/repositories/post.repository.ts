@@ -144,7 +144,7 @@ export class PostRepository {
     return posts;
   }
 
-  async findAllWithMetaByProfileId(profileId: number) {
+  async findAllWithMetaByProfileId(profileId: number, userProfileId?: number) {
     const AllpostsWithSupports = await this.prisma.post.findMany({
       where: {
         OR: [
@@ -181,8 +181,8 @@ export class PostRepository {
 
     const posts = AllpostsWithSupports.map((post) => ({
       ...post,
-      liked: profileId
-        ? post.supports.some((support) => support.profile.id === profileId)
+      liked: userProfileId
+        ? post.supports.some((support) => support.profile.id === userProfileId)
         : false,
       likedCount: post.supports.length,
     }));

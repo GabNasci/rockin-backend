@@ -73,6 +73,23 @@ export class ProfileService {
     }
   }
 
+  // async update(profileId: number, profile: UpdateProfileBodyDTO) {
+  //   Logger.log('Updating profile', 'ProfileService');
+  //   const profileToUpdate = await this.profileRepository.findById(profileId);
+  //   if (!profileToUpdate) {
+  //     Logger.error('Profile not found', 'ProfileService');
+  //     throw new AppException({
+  //       message: 'profile not found',
+  //       statusCode: 404,
+  //     });
+  //   }
+
+  //   return await this.profileRepository.update(profileId, {
+  //     ...profile,
+  //     genres: profile.genres,
+  //   });
+  // }
+
   async createOnlyProfile(profile: {
     name: string;
     handle: string;
@@ -96,7 +113,7 @@ export class ProfileService {
   async changeProfile(
     payload: RequestUserPayloadDTO,
     newProfileId: number,
-  ): Promise<{ token: string }> {
+  ): Promise<{ token: string; profile: Profile }> {
     // Verifica se o novo profile pertence ao usuário
     const profile = await this.profileRepository.findById(newProfileId);
     if (!profile) {
@@ -131,7 +148,7 @@ export class ProfileService {
       expiresIn,
     );
 
-    return { token };
+    return { token, profile };
   }
 
   async findByUserIdAndProfileId(
@@ -364,6 +381,11 @@ export class ProfileService {
   async findAll(): Promise<Profile[]> {
     Logger.log('Finding all profiles', 'ProfileService');
     return await this.profileRepository.findAll();
+  }
+
+  async findAllWithMeta(profileId?: number): Promise<Profile[]> {
+    Logger.log('Finding all profiles', 'ProfileService');
+    return await this.profileRepository.findAllWithMeta(profileId);
   }
 
   async search({
@@ -675,5 +697,15 @@ export class ProfileService {
       search,
     );
     return followings;
+  }
+
+  async checkHandleExists(handle: string) {
+    Logger.log('Checking handle exists', 'ProfileService');
+    await this.findAndVerifyProfileHandleExists(handle);
+  }
+
+  async checkEmailExists(email: string) {
+    Logger.log('Checking email exists', 'ProfileService');
+    await this.findAndVerifyUserEmailExists(email);
   }
 }

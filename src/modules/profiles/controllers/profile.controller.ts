@@ -42,6 +42,16 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
+  // @UseGuards(AuthGuard)
+  // @Patch()
+  // async updateProfile(
+  //   @Body() body: UpdateProfileBodyDTO,
+  //   @Request() req: RequestUserPayloadDTO,
+  // ) {
+  //   Logger.log('/profiles', 'PATCH');
+  //   return await this.profileService.update(req.user.profileId, body);
+  // }
+
   @UseGuards(OptionalAuthGuard)
   @Get('/handle/:handle')
   async getProfileByHandle(
@@ -111,10 +121,11 @@ export class ProfileController {
     });
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get()
-  async getAllProfiles() {
+  async getAllProfiles(@Request() req: RequestUserPayloadDTO) {
     Logger.log('/profiles', 'GET');
-    return await this.profileService.findAll();
+    return await this.profileService.findAllWithMeta(req?.user?.profileId);
   }
 
   @UseGuards(AuthGuard)
@@ -228,5 +239,19 @@ export class ProfileController {
   ) {
     Logger.log('/profiles/:profileId/follow', 'POST');
     await this.profileService.unfollowProfile(req.user.profileId, profileId);
+  }
+
+  @Get('/handle/exists/:handle')
+  @HttpCode(200)
+  async checkHandleExists(@Param('handle') handle: string) {
+    Logger.log('/profiles/handle/exists/' + handle, 'GET');
+    await this.profileService.checkHandleExists(handle);
+  }
+
+  @Get('/email/exists/:email')
+  @HttpCode(200)
+  async checkEmailExists(@Param('email') email: string) {
+    Logger.log('/profiles/email/exists/' + email, 'GET');
+    await this.profileService.checkEmailExists(email);
   }
 }

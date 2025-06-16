@@ -65,7 +65,10 @@ export class PostService {
     });
   }
 
-  async finAllByProfileId(profileId: number): Promise<Post[]> {
+  async finAllByProfileId(
+    profileId: number,
+    userProfileId?: number,
+  ): Promise<Post[]> {
     Logger.log('Finding all posts by profile id', 'PostService');
     const profile = await this.profileRepository.findById(profileId);
     if (!profile) {
@@ -75,7 +78,10 @@ export class PostService {
         statusCode: 404,
       });
     }
-    return await this.postRepository.findAllWithMetaByProfileId(profileId);
+    return await this.postRepository.findAllWithMetaByProfileId(
+      profileId,
+      userProfileId,
+    );
   }
 
   async findAll(profileId: number | undefined) {

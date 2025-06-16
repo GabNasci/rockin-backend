@@ -38,6 +38,8 @@ export class CreateProfileBodyDTO {
   @IsNotEmpty()
   name: string;
 
+  @MaxLength(50)
+  @MinLength(2)
   @Matches(HANDLE_REGEX, {
     message:
       'Handler must contain only letters, numbers, underscores, and periods',

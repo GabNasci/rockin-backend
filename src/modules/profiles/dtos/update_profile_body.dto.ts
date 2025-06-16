@@ -1,16 +1,15 @@
-import { HANDLE_REGEX, NAME_REGEX } from '@/constants/regex';
 import {
   IsArray,
   IsInt,
   IsNotEmpty,
-  IsOptional,
   IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { HANDLE_REGEX, NAME_REGEX } from '@/constants/regex';
 
-export class AddBandBodyDTO {
+export class UpdateProfileBodyDTO {
   @IsString()
   @Matches(NAME_REGEX, {
     message: 'Name must contain only letters and spaces',
@@ -20,17 +19,20 @@ export class AddBandBodyDTO {
   @IsNotEmpty()
   name: string;
 
+  about: string;
+
   @Matches(HANDLE_REGEX, {
     message:
       'Handler must contain only letters, numbers, underscores, and periods',
   })
   @IsNotEmpty()
-  @MaxLength(30)
-  @MinLength(2)
   handle: string;
 
-  @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  genres?: number[];
+  specialities: number[];
+
+  @IsArray()
+  @IsInt({ each: true })
+  genres: number[];
 }
