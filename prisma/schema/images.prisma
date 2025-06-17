@@ -3,7 +3,7 @@ model Image {
   url        String
   type       String?
   profile_id Int
-  profile    Profile?  @relation(fields: [profile_id], references: [id])
+  profile    Profile?  @relation(fields: [profile_id], references: [id], onDelete: Cascade)
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 

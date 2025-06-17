@@ -10,7 +10,7 @@ model Profile {
   band            Band?           @relation("profile_band")
   band_owner      Band[]          @relation("owner_band")
   profile_type    ProfileType?    @relation(fields: [profile_type_id], references: [id])
-  user            User?           @relation(fields: [user_id], references: [id])
+  user            User?           @relation(fields: [user_id], references: [id], onDelete: Cascade)
   images          Image[]
   locations       Location?
   supports        Support[]

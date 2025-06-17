@@ -254,4 +254,15 @@ export class ProfileController {
     Logger.log('/profiles/email/exists/' + email, 'GET');
     await this.profileService.checkEmailExists(email);
   }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:profileId/delete')
+  @HttpCode(200)
+  async deleteProfile(
+    @Param('profileId') profileId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/:profileId/delete', 'DELETE');
+    await this.profileService.deleteProfile(profileId, req.user.profileId);
+  }
 }

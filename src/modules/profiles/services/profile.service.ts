@@ -708,4 +708,29 @@ export class ProfileService {
     Logger.log('Checking email exists', 'ProfileService');
     await this.findAndVerifyUserEmailExists(email);
   }
+
+  async deleteProfile(profileId: number, userProfileId: number) {
+    Logger.log('Deleting profile', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    if (profile.id !== userProfileId) {
+      Logger.error(
+        'You are not authorized to delete this profile',
+        'ProfileService',
+      );
+      throw new AppException({
+        error: 'Unauthorized',
+        message: 'You are not authorized to delete this profile',
+        statusCode: 401,
+      });
+    }
+    await this.profileRepository.deleteProfile(profileId);
+  }
 }

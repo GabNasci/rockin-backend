@@ -601,4 +601,12 @@ export class ProfileRepository {
     });
     return profiles;
   }
+
+  async deleteProfile(profileId: number): Promise<Profile> {
+    return await this.prisma.profile.delete({
+      where: {
+        id: profileId,
+      },
+    });
+  }
 }
