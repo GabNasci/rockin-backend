@@ -773,9 +773,17 @@ export class ProfileService {
     return followings;
   }
 
-  async checkHandleExists(handle: string) {
+  async checkHandleExists(handle: string, profileId: number) {
     Logger.log('Checking handle exists', 'ProfileService');
-    await this.findAndVerifyProfileHandleExists(handle);
+    Logger.log('Finding profile by handle', 'ProfileService');
+    const user = await this.profileRepository.findByHandle(handle);
+    if (user && user.id !== profileId) {
+      Logger.error('Profile with this handle already exists', 'ProfileService');
+      throw new AppException({
+        message: 'Nome de usuário já está em uso',
+        statusCode: 400,
+      });
+    }
   }
 
   async checkEmailExists(email: string) {

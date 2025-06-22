@@ -213,11 +213,15 @@ export class ProfileController {
     await this.profileService.unfollowProfile(req.user.profileId, profileId);
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get('/handle/exists/:handle')
   @HttpCode(200)
-  async checkHandleExists(@Param('handle') handle: string) {
+  async checkHandleExists(
+    @Param('handle') handle: string,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
     Logger.log('/profiles/handle/exists/' + handle, 'GET');
-    await this.profileService.checkHandleExists(handle);
+    await this.profileService.checkHandleExists(handle, req.user?.profileId);
   }
 
   @Get('/email/exists/:email')

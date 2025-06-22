@@ -441,12 +441,12 @@ export class ProfileRepository {
         about: data.about,
         handle: data.handle,
         specialities: {
-          connect: data.specialities?.map((specialityId) => ({
+          set: data.specialities?.map((specialityId) => ({
             id: specialityId,
           })),
         },
         genres: {
-          connect: data.genres?.map((genreId) => ({ id: genreId })),
+          set: data.genres?.map((genreId) => ({ id: genreId })),
         },
       },
       include: {
