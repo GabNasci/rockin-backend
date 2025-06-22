@@ -49,14 +49,42 @@ export class BandController {
     return await this.bandService.findBands(profileId);
   }
 
+  @Get('/:profileId/members')
+  async getBandMembers(@Param('profileId') profileId: number) {
+    Logger.log('/profiles/bands/members', 'GET');
+    if (!profileId) {
+      throw new AppException({
+        error: 'Bad Request',
+        message: 'Profile id is required',
+        statusCode: 400,
+      });
+    }
+    return await this.bandService.findMembersByBandProfileId(profileId);
+  }
+
   @UseGuards(AuthGuard)
   @Put('/members/add')
-  async addMemberToBand(@Body() body: AddMembersToBandBodyDTO) {
+  async addMemberToBand(
+    @Body() body: AddMembersToBandBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
     Logger.log('/profiles/bands/members/add', 'POST');
     return await this.bandService.addMembersToBand(
-      body.profileId,
-      body.bandId,
+      req.user.profileId,
       body.members,
     );
+  }
+
+  @Get('/info/:profileId')
+  async getBandInfo(@Param('profileId') profileId: number) {
+    Logger.log('/profiles/bands/info', 'GET');
+    if (!profileId) {
+      throw new AppException({
+        error: 'Bad Request',
+        message: 'Profile id is required',
+        statusCode: 400,
+      });
+    }
+    return await this.bandService.findBandByProfileId(profileId);
   }
 }

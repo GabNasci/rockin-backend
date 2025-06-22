@@ -4,7 +4,7 @@ model Post {
   link            String?
   profile_id      Int
   supports        Support[]
-  profile         Profile   @relation(fields: [profile_id], references: [id])
+  profile         Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
   tagged_profiles Profile[] @relation("posts_profiles")
   medias          Media[]
   created_at      DateTime  @default(now())

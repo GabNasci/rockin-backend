@@ -5,7 +5,7 @@ import { BandRepository } from '../repositories/band.repository';
 import { AppException } from '@/errors/appException';
 import { ProfileService } from './profile.service';
 import { ProfileTypeIdEnum } from '@/constants/enums';
-import { Band } from '@prisma/client';
+import { Band, Profile } from '@prisma/client';
 
 @Injectable()
 export class BandService {
@@ -83,9 +83,46 @@ export class BandService {
     return await this.bandRepository.findManyByProfileId(profile.id);
   }
 
+  async findBandByProfileId(profileId: number): Promise<Band | null> {
+    Logger.log('Finding band by profile id', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+
+    if (profile.profile_type_id !== ProfileTypeIdEnum.BAND.valueOf()) {
+      Logger.error('Profile is not a band', 'ProfileService');
+      return null;
+    }
+    return await this.bandRepository.findByProfileId(profile.id);
+  }
+
+  async findMembersByBandProfileId(profileId: number): Promise<Profile[]> {
+    Logger.log('Finding member band', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const band = await this.bandRepository.findByProfileId(profile.id);
+    if (!band) {
+      Logger.error('Band not found', 'ProfileService');
+      return [];
+    }
+    return band.members;
+  }
+
   async addMembersToBand(
     profileId: number,
-    bandId: number,
     memberIds: number[],
   ): Promise<Band> {
     Logger.log('Adding band members', 'ProfileService');
@@ -99,7 +136,7 @@ export class BandService {
       });
     }
 
-    const band = await this.bandRepository.findById(bandId);
+    const band = await this.bandRepository.findByProfileId(profile.id);
     if (!band) {
       Logger.error('Band not found', 'ProfileService');
       throw new AppException({
@@ -109,7 +146,7 @@ export class BandService {
       });
     }
 
-    if (band.owner_id !== profile.id) {
+    if (band.profile_id !== profile.id) {
       Logger.error('User is not the owner of the band', 'ProfileService');
       throw new AppException({
         error: 'Forbidden',
@@ -118,7 +155,7 @@ export class BandService {
       });
     }
 
-    await this.bandRepository.addMembers(bandId, memberIds);
+    await this.bandRepository.addMembers(band.id, memberIds);
 
     return band;
   }

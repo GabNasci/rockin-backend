@@ -3,8 +3,8 @@ model Recomendation {
   followingId Int
   createdAt   DateTime @default(now())
 
-  follower  Profile @relation("Following", fields: [followerId], references: [id])
-  following Profile @relation("Followed", fields: [followingId], references: [id])
+  follower  Profile @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following Profile @relation("Followed", fields: [followingId], references: [id], onDelete: Cascade)
 
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt

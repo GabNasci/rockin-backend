@@ -4,6 +4,8 @@ import { PostRepository } from '@modules/posts/repositories/post.repository';
 import { ProfileRepository } from '@modules/profiles/repositories/profile.repository';
 import { AppException } from '@/errors/appException';
 import { MediaRepository } from '../repositories/media.repository';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PostService {
@@ -161,5 +163,49 @@ export class PostService {
       });
     }
     await this.postRepository.unlikePost(profileId, postId);
+  }
+
+  async deletePost(profileId: number, postId: number) {
+    Logger.log('Deleting a post', 'PostService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Profile not found',
+        statusCode: 404,
+      });
+    }
+    const post = await this.postRepository.findById(postId);
+    if (!post) {
+      throw new AppException({
+        error: 'Not Found',
+        message: 'Post not found',
+        statusCode: 404,
+      });
+    }
+    if (post.profile_id !== profile.id) {
+      throw new AppException({
+        error: 'Forbidden',
+        message: 'You are not the owner of this post',
+        statusCode: 403,
+      });
+    }
+
+    const medias = await this.mediaRepository.findManyByPostId(postId);
+
+    for (const media of medias) {
+      const filePath = path.join(process.cwd(), 'uploads', media.url);
+      try {
+        await fs.unlink(filePath);
+        Logger.log(`Arquivo ${media.url} deletado com sucesso`, 'PostService');
+      } catch (error) {
+        Logger.error(
+          `Erro ao deletar o arquivo ${media.url}`,
+          error,
+          'PostService',
+        );
+      }
+    }
+    await this.postRepository.deletePost(postId);
   }
 }

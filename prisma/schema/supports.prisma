@@ -1,8 +1,8 @@
 model Support {
   profile_id Int
   post_id    Int
-  profile    Profile   @relation(fields: [profile_id], references: [id])
-  post       Post      @relation(fields: [post_id], references: [id])
+  profile    Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  post       Post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 

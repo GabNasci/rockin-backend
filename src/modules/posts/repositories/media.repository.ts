@@ -11,4 +11,12 @@ export class MediaRepository {
       data: media,
     });
   }
+
+  async findManyByPostId(postId: number): Promise<Media[]> {
+    return await this.prisma.media.findMany({
+      where: {
+        post_id: postId,
+      },
+    });
+  }
 }

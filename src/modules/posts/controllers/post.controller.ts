@@ -119,4 +119,15 @@ export class PostController {
     Logger.log('/posts/link-preview', 'POST');
     return await this.postService.getLinkPreview(link);
   }
+
+  @UseGuards(AuthGuard)
+  @Delete('/:postId')
+  @HttpCode(200)
+  async deletePost(
+    @Param('postId') postId: number,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log(`/posts/${postId}`, 'DELETE');
+    await this.postService.deletePost(req.user.profileId, postId);
+  }
 }

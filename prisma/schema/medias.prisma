@@ -3,7 +3,7 @@ model Media {
   url        String
   type       String?
   post_id    Int
-  posts      Post?     @relation(fields: [post_id], references: [id])
+  posts      Post?     @relation(fields: [post_id], references: [id], onDelete: Cascade)
   created_at DateTime  @default(now())
   updated_at DateTime? @updatedAt
 

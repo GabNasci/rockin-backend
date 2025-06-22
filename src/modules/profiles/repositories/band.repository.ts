@@ -47,6 +47,25 @@ export class BandRepository {
     });
   }
 
+  async findByProfileId(profileId: number) {
+    return await this.prisma.band.findFirst({
+      where: {
+        profile: {
+          id: profileId,
+        },
+      },
+      include: {
+        owner: true,
+        profile: true,
+        members: {
+          include: {
+            specialities: true,
+          },
+        },
+      },
+    });
+  }
+
   async findById(id: number): Promise<Band | null> {
     return await this.prisma.band.findUnique({
       where: {
@@ -84,7 +103,7 @@ export class BandRepository {
       },
       data: {
         members: {
-          connect: memberIds.map((memberId) => ({
+          set: memberIds.map((memberId) => ({
             id: memberId,
           })),
         },
