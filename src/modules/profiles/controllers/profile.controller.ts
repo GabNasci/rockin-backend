@@ -27,6 +27,7 @@ import { diskStorage } from 'multer';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
 import { OptionalAuthGuard } from '@modules/auth/guards/optional-auth.guard';
 import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
+import { UpdateLocationBodyDTO } from '../dtos/update_location_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -235,5 +236,15 @@ export class ProfileController {
   ) {
     Logger.log('/profiles/:profileId/delete', 'DELETE');
     await this.profileService.deleteProfile(profileId, req.user.profileId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('/location')
+  async updateLocation(
+    @Body() body: UpdateLocationBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/location ', 'PUT');
+    return await this.profileService.updateLocation(req.user.profileId, body);
   }
 }

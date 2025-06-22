@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Profile, Recomendation } from '@prisma/client';
+import { Prisma, Profile, Recomendation } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { searchProfiles } from '@prisma/client/sql';
@@ -617,6 +617,34 @@ export class ProfileRepository {
     return await this.prisma.profile.delete({
       where: {
         id: profileId,
+      },
+    });
+  }
+
+  async upsertLocation(
+    profileId: number,
+    location: Prisma.LocationCreateInput,
+  ) {
+    return await this.prisma.location.upsert({
+      where: {
+        profile_id: profileId,
+      },
+      update: {
+        city: location.city,
+        state: location.state,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+      create: {
+        city: location.city,
+        state: location.state,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        profile: {
+          connect: { id: profileId },
+        },
       },
     });
   }

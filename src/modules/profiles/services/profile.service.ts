@@ -16,6 +16,7 @@ import { AuthService } from '@modules/auth/services/auth.service';
 import { join } from 'path';
 import { unlink } from 'fs/promises';
 import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
+import { UpdateLocationBodyDTO } from '../dtos/update_location_body.dto';
 
 @Injectable()
 export class ProfileService {
@@ -809,5 +810,21 @@ export class ProfileService {
     }
 
     await this.profileRepository.deleteProfile(profileId);
+  }
+
+  async updateLocation(profileId: number, location: UpdateLocationBodyDTO) {
+    Logger.log('Updating location', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    await this.profileRepository.upsertLocation(profileId, {
+      ...location,
+    });
   }
 }
