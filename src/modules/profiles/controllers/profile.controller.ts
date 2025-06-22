@@ -170,7 +170,7 @@ export class ProfileController {
     @UploadedFile() file: { filename: string },
     @Request() req: RequestUserPayloadDTO,
   ) {
-    Logger.log('/profiles/avatar/add', 'POST');
+    Logger.log('/profiles/avatar/add', 'PUT');
     await this.profileService.addAvatarToProfile(file, req.user.profileId);
   }
 
