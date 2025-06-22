@@ -18,9 +18,7 @@ import {
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
 import { AuthGuard } from '@modules/auth/guards/auth.guard';
-import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
-import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
 import { SearchRequestBodyDTO } from '../dtos/search_request_body.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppException } from '@/errors/appException';
@@ -92,34 +90,6 @@ export class ProfileController {
     Logger.log('/profiles/user', 'GET');
     Logger.log(req.user.exp);
     return await this.profileService.findProfilesByUserId(req.user.id);
-  }
-
-  @UseGuards(AuthGuard)
-  @Put('/specialities/add')
-  async addSpecialitiesToProfile(
-    @Body() body: AddSpecialitiesBodyDTO,
-    @Request() req: RequestUserPayloadDTO,
-  ) {
-    Logger.log('/profiles/specialities/add', 'POST');
-    return await this.profileService.addSpecialities({
-      userId: req.user.id,
-      profileId: body.profileId,
-      specialityIds: body.specialityIds,
-    });
-  }
-
-  @UseGuards(AuthGuard)
-  @Put('/genres/add')
-  async addGenresToProfile(
-    @Body() body: AddGenresBodyDTO,
-    @Request() req: RequestUserPayloadDTO,
-  ) {
-    Logger.log('/profiles/genres/add', 'POST');
-    return await this.profileService.addGenres({
-      userId: req.user.id,
-      profileId: body.profileId,
-      genreIds: body.genreIds,
-    });
   }
 
   @UseGuards(OptionalAuthGuard)
