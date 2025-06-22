@@ -28,6 +28,7 @@ import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
 import { OptionalAuthGuard } from '@modules/auth/guards/optional-auth.guard';
+import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -42,15 +43,15 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
-  // @UseGuards(AuthGuard)
-  // @Patch()
-  // async updateProfile(
-  //   @Body() body: UpdateProfileBodyDTO,
-  //   @Request() req: RequestUserPayloadDTO,
-  // ) {
-  //   Logger.log('/profiles', 'PATCH');
-  //   return await this.profileService.update(req.user.profileId, body);
-  // }
+  @UseGuards(AuthGuard)
+  @Put()
+  async updateProfile(
+    @Body() body: UpdateProfileBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles', 'PUT');
+    return await this.profileService.update(req.user.profileId, body);
+  }
 
   @UseGuards(OptionalAuthGuard)
   @Get('/handle/:handle')

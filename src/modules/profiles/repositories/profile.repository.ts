@@ -4,6 +4,7 @@ import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { searchProfiles } from '@prisma/client/sql';
 import { SearchBody } from './interfaces/search_body.interface';
+import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Injectable()
 export class ProfileRepository {
@@ -430,20 +431,30 @@ export class ProfileRepository {
     });
   }
 
-  // async update(id: number, data: UpdateProfileBodyDTO): Promise<Profile> {
-  //   return await this.prisma.profile.update({
-  //     where: {
-  //       id,
-  //     },
-  //     name: data.name,
-  //     about: data.about,
-  //     handle: data.handle,
-
-  //     include: {
-  //       specialities: true,
-  //     },
-  //   });
-  // }
+  async update(id: number, data: UpdateProfileBodyDTO): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data: {
+        name: data.name,
+        about: data.about,
+        handle: data.handle,
+        specialities: {
+          connect: data.specialities?.map((specialityId) => ({
+            id: specialityId,
+          })),
+        },
+        genres: {
+          connect: data.genres?.map((genreId) => ({ id: genreId })),
+        },
+      },
+      include: {
+        specialities: true,
+        genres: true,
+      },
+    });
+  }
 
   async findByUserIdAndProfileId(
     userId: number,
