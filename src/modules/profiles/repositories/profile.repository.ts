@@ -98,9 +98,7 @@ export class ProfileRepository {
     profileId,
   }: SearchBody) {
     let profileIds: number[] = [];
-
-    const hasCoordinates =
-      latitude && longitude && latitude !== null && longitude !== null;
+    const hasCoordinates = !!latitude && !!longitude;
 
     if (hasCoordinates && radius) {
       const profiles = await this.prisma.$queryRawTyped(
@@ -109,24 +107,8 @@ export class ProfileRepository {
       profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 
-    const shouldFilterByProfileIds =
-      hasCoordinates && !!radius && profileIds.length > 0;
+    const shouldFilterByProfileIds = hasCoordinates && !!radius;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let idFilter: any = undefined;
-
-    if (shouldFilterByProfileIds) {
-      idFilter = { in: profileIds };
-    }
-
-    if (profileId) {
-      idFilter = {
-        ...(idFilter || {}),
-        not: profileId,
-      };
-    }
-
-    // Busca inicial sem paginação
     const allProfiles = await this.prisma.profile.findMany({
       include: {
         specialities: true,
@@ -139,7 +121,10 @@ export class ProfileRepository {
         },
       },
       where: {
-        ...(idFilter ? { id: idFilter } : {}),
+        id: {
+          not: profileId,
+          in: shouldFilterByProfileIds ? profileIds : undefined,
+        },
         ...(profileTypes && profileTypes.length > 0
           ? {
               profile_type: {
