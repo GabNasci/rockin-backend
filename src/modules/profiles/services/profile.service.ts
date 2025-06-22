@@ -259,7 +259,7 @@ export class ProfileService {
     if (user) {
       Logger.error('Profile with this handle already exists', 'ProfileService');
       throw new AppException({
-        message: 'handle already in use',
+        message: 'Nome de usuário já está em uso',
         statusCode: 400,
       });
     }
