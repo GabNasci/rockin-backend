@@ -9,7 +9,6 @@ import { ProfileService } from './services/profile.service';
 import { ProfileTypeService } from './services/profile_type.service';
 import { ProfileRepository } from './repositories/profile.repository';
 import { AuthModule } from '@modules/auth/auth.module';
-import { FileService } from './services/file.service';
 import { ImageRepository } from './repositories/image.repository';
 import { ConversationController } from './controllers/conversation.controller';
 import { ConversationRepository } from './repositories/conversation.repository';
@@ -33,7 +32,6 @@ import { BandService } from './services/band.service';
     ProfileService,
     ProfileTypeService,
     ProfileRepository,
-    FileService,
     ImageRepository,
     ConversationRepository,
     ConversationService,
@@ -46,7 +44,6 @@ import { BandService } from './services/band.service';
     ProfileService,
     ProfileTypeService,
     ProfileRepository,
-    FileService,
     ImageRepository,
   ],
 })

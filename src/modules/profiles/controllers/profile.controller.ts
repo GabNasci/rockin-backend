@@ -18,9 +18,7 @@ import {
 import { ProfileService } from '@modules/profiles/services/profile.service';
 import { CreateProfileBodyDTO } from '@modules/profiles/dtos/create_profile_body.dto';
 import { AuthGuard } from '@modules/auth/guards/auth.guard';
-import { AddSpecialitiesBodyDTO } from '../dtos/add_specialities_body.dto';
 import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
-import { AddGenresBodyDTO } from '../dtos/add_genres_body.dto';
 import { SearchRequestBodyDTO } from '../dtos/search_request_body.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppException } from '@/errors/appException';
@@ -28,6 +26,8 @@ import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { ProfileTypeRepository } from '../repositories/profile_type.repository';
 import { OptionalAuthGuard } from '@modules/auth/guards/optional-auth.guard';
+import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
+import { UpdateLocationBodyDTO } from '../dtos/update_location_body.dto';
 
 @Controller('profiles')
 export class ProfileController {
@@ -42,15 +42,15 @@ export class ProfileController {
     return await this.profileService.create(body);
   }
 
-  // @UseGuards(AuthGuard)
-  // @Patch()
-  // async updateProfile(
-  //   @Body() body: UpdateProfileBodyDTO,
-  //   @Request() req: RequestUserPayloadDTO,
-  // ) {
-  //   Logger.log('/profiles', 'PATCH');
-  //   return await this.profileService.update(req.user.profileId, body);
-  // }
+  @UseGuards(AuthGuard)
+  @Put()
+  async updateProfile(
+    @Body() body: UpdateProfileBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles', 'PUT');
+    return await this.profileService.update(req.user.profileId, body);
+  }
 
   @UseGuards(OptionalAuthGuard)
   @Get('/handle/:handle')
@@ -93,34 +93,6 @@ export class ProfileController {
     return await this.profileService.findProfilesByUserId(req.user.id);
   }
 
-  @UseGuards(AuthGuard)
-  @Put('/specialities/add')
-  async addSpecialitiesToProfile(
-    @Body() body: AddSpecialitiesBodyDTO,
-    @Request() req: RequestUserPayloadDTO,
-  ) {
-    Logger.log('/profiles/specialities/add', 'POST');
-    return await this.profileService.addSpecialities({
-      userId: req.user.id,
-      profileId: body.profileId,
-      specialityIds: body.specialityIds,
-    });
-  }
-
-  @UseGuards(AuthGuard)
-  @Put('/genres/add')
-  async addGenresToProfile(
-    @Body() body: AddGenresBodyDTO,
-    @Request() req: RequestUserPayloadDTO,
-  ) {
-    Logger.log('/profiles/genres/add', 'POST');
-    return await this.profileService.addGenres({
-      userId: req.user.id,
-      profileId: body.profileId,
-      genreIds: body.genreIds,
-    });
-  }
-
   @UseGuards(OptionalAuthGuard)
   @Get()
   async getAllProfiles(@Request() req: RequestUserPayloadDTO) {
@@ -141,7 +113,7 @@ export class ProfileController {
     );
   }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(OptionalAuthGuard)
   @Post('/search')
   async searchProfiles(
     @Body() body: SearchRequestBodyDTO,
@@ -149,7 +121,7 @@ export class ProfileController {
   ) {
     Logger.log('/search', 'POST');
     return await this.profileService.search({
-      profileId: req.user?.id,
+      profileId: req?.user?.profileId,
       page: body.page,
       limit: body.limit,
       radius: body.radius,
@@ -198,7 +170,7 @@ export class ProfileController {
     @UploadedFile() file: { filename: string },
     @Request() req: RequestUserPayloadDTO,
   ) {
-    Logger.log('/profiles/avatar/add', 'POST');
+    Logger.log('/profiles/avatar/add', 'PUT');
     await this.profileService.addAvatarToProfile(file, req.user.profileId);
   }
 
@@ -241,11 +213,15 @@ export class ProfileController {
     await this.profileService.unfollowProfile(req.user.profileId, profileId);
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get('/handle/exists/:handle')
   @HttpCode(200)
-  async checkHandleExists(@Param('handle') handle: string) {
+  async checkHandleExists(
+    @Param('handle') handle: string,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
     Logger.log('/profiles/handle/exists/' + handle, 'GET');
-    await this.profileService.checkHandleExists(handle);
+    await this.profileService.checkHandleExists(handle, req.user?.profileId);
   }
 
   @Get('/email/exists/:email')
@@ -264,5 +240,15 @@ export class ProfileController {
   ) {
     Logger.log('/profiles/:profileId/delete', 'DELETE');
     await this.profileService.deleteProfile(profileId, req.user.profileId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('/location')
+  async updateLocation(
+    @Body() body: UpdateLocationBodyDTO,
+    @Request() req: RequestUserPayloadDTO,
+  ) {
+    Logger.log('/profiles/location ', 'PUT');
+    return await this.profileService.updateLocation(req.user.profileId, body);
   }
 }

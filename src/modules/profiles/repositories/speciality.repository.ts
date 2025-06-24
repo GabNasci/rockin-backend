@@ -46,4 +46,14 @@ export class SpecialityRepository {
       },
     });
   }
+
+  async findManyByIds(ids: number[]): Promise<Speciality[]> {
+    return await this.prisma.speciality.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }

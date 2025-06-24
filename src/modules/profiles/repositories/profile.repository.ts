@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Profile, Recomendation } from '@prisma/client';
+import { Prisma, Profile, Recomendation } from '@prisma/client';
 import { PrismaService } from '@infra/database/prisma/prisma.service';
 import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { searchProfiles } from '@prisma/client/sql';
 import { SearchBody } from './interfaces/search_body.interface';
+import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
 
 @Injectable()
 export class ProfileRepository {
@@ -97,9 +98,7 @@ export class ProfileRepository {
     profileId,
   }: SearchBody) {
     let profileIds: number[] = [];
-
-    const hasCoordinates =
-      latitude && longitude && latitude !== null && longitude !== null;
+    const hasCoordinates = !!latitude && !!longitude;
 
     if (hasCoordinates && radius) {
       const profiles = await this.prisma.$queryRawTyped(
@@ -108,24 +107,8 @@ export class ProfileRepository {
       profileIds = profiles.map((profile: { id: number }) => profile.id);
     }
 
-    const shouldFilterByProfileIds =
-      hasCoordinates && !!radius && profileIds.length > 0;
+    const shouldFilterByProfileIds = hasCoordinates && !!radius;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let idFilter: any = undefined;
-
-    if (shouldFilterByProfileIds) {
-      idFilter = { in: profileIds };
-    }
-
-    if (profileId) {
-      idFilter = {
-        ...(idFilter || {}),
-        not: profileId,
-      };
-    }
-
-    // Busca inicial sem paginação
     const allProfiles = await this.prisma.profile.findMany({
       include: {
         specialities: true,
@@ -138,7 +121,10 @@ export class ProfileRepository {
         },
       },
       where: {
-        ...(idFilter ? { id: idFilter } : {}),
+        id: {
+          not: profileId,
+          in: shouldFilterByProfileIds ? profileIds : undefined,
+        },
         ...(profileTypes && profileTypes.length > 0
           ? {
               profile_type: {
@@ -430,20 +416,30 @@ export class ProfileRepository {
     });
   }
 
-  // async update(id: number, data: UpdateProfileBodyDTO): Promise<Profile> {
-  //   return await this.prisma.profile.update({
-  //     where: {
-  //       id,
-  //     },
-  //     name: data.name,
-  //     about: data.about,
-  //     handle: data.handle,
-
-  //     include: {
-  //       specialities: true,
-  //     },
-  //   });
-  // }
+  async update(id: number, data: UpdateProfileBodyDTO): Promise<Profile> {
+    return await this.prisma.profile.update({
+      where: {
+        id,
+      },
+      data: {
+        name: data.name,
+        about: data.about,
+        handle: data.handle,
+        specialities: {
+          set: data.specialities?.map((specialityId) => ({
+            id: specialityId,
+          })),
+        },
+        genres: {
+          set: data.genres?.map((genreId) => ({ id: genreId })),
+        },
+      },
+      include: {
+        specialities: true,
+        genres: true,
+      },
+    });
+  }
 
   async findByUserIdAndProfileId(
     userId: number,
@@ -461,6 +457,7 @@ export class ProfileRepository {
         followers: true,
         following: true,
         posts: true,
+        locations: true,
       },
     });
   }
@@ -606,6 +603,34 @@ export class ProfileRepository {
     return await this.prisma.profile.delete({
       where: {
         id: profileId,
+      },
+    });
+  }
+
+  async upsertLocation(
+    profileId: number,
+    location: Prisma.LocationCreateInput,
+  ) {
+    return await this.prisma.location.upsert({
+      where: {
+        profile_id: profileId,
+      },
+      update: {
+        city: location.city,
+        state: location.state,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+      create: {
+        city: location.city,
+        state: location.state,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        profile: {
+          connect: { id: profileId },
+        },
       },
     });
   }

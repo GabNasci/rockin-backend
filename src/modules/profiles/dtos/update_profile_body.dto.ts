@@ -2,6 +2,7 @@ import {
   IsArray,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -19,13 +20,19 @@ export class UpdateProfileBodyDTO {
   @IsNotEmpty()
   name: string;
 
-  about: string;
+  @IsString()
+  @IsOptional()
+  @MaxLength(250)
+  about?: string;
 
+  @IsString()
   @Matches(HANDLE_REGEX, {
     message:
       'Handler must contain only letters, numbers, underscores, and periods',
   })
   @IsNotEmpty()
+  @MaxLength(50)
+  @MinLength(2)
   handle: string;
 
   @IsArray()

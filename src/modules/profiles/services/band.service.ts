@@ -31,7 +31,13 @@ export class BandService {
   }) {
     Logger.log('Creating band profile', 'ProfileService');
     const profile = await this.profileService.verifyIfProfileExists(profileId);
-
+    if (profile.profile_type_id !== ProfileTypeIdEnum.MUSICIAN.valueOf()) {
+      throw new AppException({
+        error: 'Forbidden',
+        message: 'Apenas músicos podem criar bandas',
+        statusCode: 403,
+      });
+    }
     Logger.log('Verifying if user exists', 'ProfileService');
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -133,6 +139,14 @@ export class BandService {
         error: 'Not found',
         message: 'profile not found',
         statusCode: 404,
+      });
+    }
+    if (profile.profile_type_id !== ProfileTypeIdEnum.BAND.valueOf()) {
+      Logger.error('Profile is not a band', 'ProfileService');
+      throw new AppException({
+        error: 'Forbidden',
+        message: 'Perfil não é uma banda',
+        statusCode: 403,
       });
     }
 

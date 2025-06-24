@@ -15,6 +15,8 @@ import { RequestUserPayloadDTO } from '../dtos/request_user_payload.dto';
 import { AuthService } from '@modules/auth/services/auth.service';
 import { join } from 'path';
 import { unlink } from 'fs/promises';
+import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
+import { UpdateLocationBodyDTO } from '../dtos/update_location_body.dto';
 
 @Injectable()
 export class ProfileService {
@@ -73,22 +75,65 @@ export class ProfileService {
     }
   }
 
-  // async update(profileId: number, profile: UpdateProfileBodyDTO) {
-  //   Logger.log('Updating profile', 'ProfileService');
-  //   const profileToUpdate = await this.profileRepository.findById(profileId);
-  //   if (!profileToUpdate) {
-  //     Logger.error('Profile not found', 'ProfileService');
-  //     throw new AppException({
-  //       message: 'profile not found',
-  //       statusCode: 404,
-  //     });
-  //   }
+  async update(profileId: number, profile: UpdateProfileBodyDTO) {
+    Logger.log('Updating profile', 'ProfileService');
+    const profileToUpdate = await this.profileRepository.findById(profileId);
+    if (!profileToUpdate) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    const handleFinded = await this.profileRepository.findByHandle(
+      profile.handle,
+    );
 
-  //   return await this.profileRepository.update(profileId, {
-  //     ...profile,
-  //     genres: profile.genres,
-  //   });
-  // }
+    if (handleFinded && handleFinded.id !== profileToUpdate.id) {
+      Logger.error('Handle already exists', 'ProfileService');
+      throw new AppException({
+        message: 'Nome de usuário já existe',
+        statusCode: 400,
+      });
+    }
+    if (profile.specialities?.length > 0) {
+      const specialities = await this.specialityRepository.findManyByIds(
+        profile.specialities,
+      );
+      if (specialities.length !== profile.specialities.length) {
+        Logger.error('Specialty not found', 'ProfileService');
+        throw new AppException({
+          message: 'Especialidade não encontrada',
+          statusCode: 404,
+        });
+      }
+      const invalidSpecialities = specialities.filter(
+        (speciality) =>
+          speciality.profile_type_id !== profileToUpdate.profile_type_id,
+      );
+
+      if (invalidSpecialities.length > 0) {
+        Logger.error('Invalid specialities for profile type', 'ProfileService');
+        throw new AppException({
+          message: 'Especialidades inválidas para o tipo de perfil',
+          statusCode: 400,
+        });
+      }
+    }
+
+    if (profile.genres?.length > 0) {
+      const genres = await this.genreRepository.findManyByIds(profile.genres);
+      if (genres.length !== profile.genres.length) {
+        Logger.error('Genre not found', 'ProfileService');
+        throw new AppException({
+          message: 'Gênero não encontrado',
+          statusCode: 404,
+        });
+      }
+    }
+
+    return await this.profileRepository.update(profileId, profile);
+  }
 
   async createOnlyProfile(profile: {
     name: string;
@@ -215,7 +260,7 @@ export class ProfileService {
     if (user) {
       Logger.error('Profile with this handle already exists', 'ProfileService');
       throw new AppException({
-        message: 'handle already in use',
+        message: 'Nome de usuário já está em uso',
         statusCode: 400,
       });
     }
@@ -489,25 +534,14 @@ export class ProfileService {
   }
 
   async addAvatarToProfile(file: { filename: string }, profileId: number) {
-    Logger.log('Adding avatar to profile', 'ProfileService');
-    const profile = await this.profileRepository.findById(profileId);
-    if (!profile) {
-      Logger.error('Profile not found', 'ProfileService');
+    if (!file) {
       throw new AppException({
         error: 'Not found',
-        message: 'profile not found',
+        message: 'file not found',
         statusCode: 404,
       });
     }
-    const avatar = await this.profileRepository.addAvatar(
-      profileId,
-      file.filename,
-    );
-    return avatar;
-  }
-
-  async removeAvatarFromProfile(profileId: number) {
-    Logger.log('Removing avatar from profile', 'ProfileService');
+    Logger.log('Adding avatar to profile', 'ProfileService');
     const profile = await this.profileRepository.findById(profileId);
     if (!profile) {
       Logger.error('Profile not found', 'ProfileService');
@@ -533,6 +567,46 @@ export class ProfileService {
           statusCode: 500,
         });
       }
+    }
+
+    const avatar = await this.profileRepository.addAvatar(
+      profileId,
+      file.filename,
+    );
+    return avatar;
+  }
+
+  async removeAvatarFile(avatar: string) {
+    Logger.log('Removing avatar from profile', 'ProfileService');
+    const filePath = join(process.cwd(), 'uploads', avatar);
+    try {
+      await unlink(filePath);
+    } catch (err) {
+      Logger.warn(
+        `Erro ao remover arquivo de avatar: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw new AppException({
+        error: 'Internal Server Error',
+        message: 'Erro ao remover arquivo de avatar',
+        statusCode: 500,
+      });
+    }
+  }
+
+  async removeAvatarFromProfile(profileId: number) {
+    Logger.log('Removing avatar from profile', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+
+    if (profile.avatar) {
+      await this.removeAvatarFile(profile.avatar);
     }
 
     await this.profileRepository.removeAvatar(profileId);
@@ -699,9 +773,17 @@ export class ProfileService {
     return followings;
   }
 
-  async checkHandleExists(handle: string) {
+  async checkHandleExists(handle: string, profileId: number) {
     Logger.log('Checking handle exists', 'ProfileService');
-    await this.findAndVerifyProfileHandleExists(handle);
+    Logger.log('Finding profile by handle', 'ProfileService');
+    const user = await this.profileRepository.findByHandle(handle);
+    if (user && user.id !== profileId) {
+      Logger.error('Profile with this handle already exists', 'ProfileService');
+      throw new AppException({
+        message: 'Nome de usuário já está em uso',
+        statusCode: 400,
+      });
+    }
   }
 
   async checkEmailExists(email: string) {
@@ -731,6 +813,26 @@ export class ProfileService {
         statusCode: 401,
       });
     }
+    if (profile.avatar) {
+      await this.removeAvatarFile(profile.avatar);
+    }
+
     await this.profileRepository.deleteProfile(profileId);
+  }
+
+  async updateLocation(profileId: number, location: UpdateLocationBodyDTO) {
+    Logger.log('Updating location', 'ProfileService');
+    const profile = await this.profileRepository.findById(profileId);
+    if (!profile) {
+      Logger.error('Profile not found', 'ProfileService');
+      throw new AppException({
+        error: 'Not found',
+        message: 'profile not found',
+        statusCode: 404,
+      });
+    }
+    await this.profileRepository.upsertLocation(profileId, {
+      ...location,
+    });
   }
 }

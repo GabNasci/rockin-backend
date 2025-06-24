@@ -35,4 +35,14 @@ export class GenreRepository {
       },
     });
   }
+
+  async findManyByIds(ids: number[]): Promise<Genre[]> {
+    return await this.prisma.genre.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+  }
 }
