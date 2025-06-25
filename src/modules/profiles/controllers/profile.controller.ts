@@ -104,12 +104,17 @@ export class ProfileController {
   @Get('/followings')
   async searchFollowings(
     @Query('q') query: string,
+    @Query('noBands') noBands: string,
     @Request() req: RequestUserPayloadDTO,
   ) {
     Logger.log('/profiles/followings?q=' + query, 'GET');
+
+    const shouldExcludeBands = noBands === 'true';
+
     return await this.profileService.searchFollowings(
       req.user.profileId,
       query || '',
+      shouldExcludeBands,
     );
   }
 

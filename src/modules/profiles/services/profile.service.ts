@@ -755,7 +755,11 @@ export class ProfileService {
     return following;
   }
 
-  async searchFollowings(profileId: number, search: string) {
+  async searchFollowings(
+    profileId: number,
+    search: string,
+    shouldExcludeBands: boolean,
+  ) {
     Logger.log('Searching followings', 'ProfileService');
     const profile = await this.profileRepository.findById(profileId);
     if (!profile) {
@@ -769,6 +773,7 @@ export class ProfileService {
     const followings = await this.profileRepository.searchFollowings(
       profileId,
       search,
+      shouldExcludeBands,
     );
     return followings;
   }

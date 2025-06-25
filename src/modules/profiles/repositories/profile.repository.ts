@@ -5,6 +5,7 @@ import { CreateProfileBodyDTO } from '../dtos/create_profile_body.dto';
 import { searchProfiles } from '@prisma/client/sql';
 import { SearchBody } from './interfaces/search_body.interface';
 import { UpdateProfileBodyDTO } from '../dtos/update_profile_body.dto';
+import { ProfileTypeIdEnum } from '@/constants/enums';
 
 @Injectable()
 export class ProfileRepository {
@@ -561,6 +562,7 @@ export class ProfileRepository {
   async searchFollowings(
     profileId: number,
     search: string,
+    shouldExcludeBands: boolean,
   ): Promise<Profile[]> {
     const followings = await this.prisma.recomendation.findMany({
       where: {
@@ -575,6 +577,9 @@ export class ProfileRepository {
 
     const profiles = await this.prisma.profile.findMany({
       where: {
+        ...(shouldExcludeBands && {
+          profile_type_id: { not: ProfileTypeIdEnum.BAND },
+        }),
         id: {
           in: followingIds,
         },
