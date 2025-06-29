@@ -150,6 +150,12 @@ export class ProfileRepository {
                     mode: 'insensitive',
                   },
                 },
+                {
+                  about: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
               ],
             }
           : {}),
